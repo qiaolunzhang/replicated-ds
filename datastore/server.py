@@ -18,6 +18,7 @@ class ProcessThread(threading.Thread):
         tot_len = 0
         msg_len_pack = b""
         msg = ""
+        # todo: add more control for length
         while tot_len < self.RECV_MSG_LEN:
             print("Test")
             msg_len_pack = self.csocket.recv(self.RECV_MSG_LEN)
@@ -30,8 +31,10 @@ class ProcessThread(threading.Thread):
 
         tot_len = 0
         while tot_len < msg_len:
-            msg = self.csocket.recv(self.RECV_BUFFER)
+            #msg = self.csocket.recv(self.RECV_BUFFER)
+            msg = self.csocket.recv(msg_len)
             tot_len = tot_len + len(msg)
+        msg = msg.decode('UTF-8')
         return msg
 
     def process_packet_client(self, msg):
@@ -40,7 +43,7 @@ class ProcessThread(threading.Thread):
             return "quit"
         elif msg[0] == "W":
             # e.g. x:3
-            msg = msg.split(":")
+            msg = msg[1:].split(":")
             key = msg[0]
             value = msg[1]
             # not necessarily to be integer

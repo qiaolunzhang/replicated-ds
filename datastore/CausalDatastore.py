@@ -3,46 +3,60 @@ import time
 import logging
 import concurrent.futures
 
-class LocalDataStore:
+class CausalDataStore:
     def __init__(self):
+        # keeps some key value in the memory
         self.value_dic = {}
-        self._lock = threading.Lock()
+        # keeps keys of the values needed to be stored in the database
+        self.updatedKey = list()
+        self.lock = threading.Lock()
 
-    def load_value(self, name):
+    def locked_load_value(self, name):
         # todo: load value from database to self.value_dict
         # password: password
         pass
 
-    def store_to_db(self):
+    def locked_store_to_db(self):
         pass
 
     def write(self, name, value):
+        logging.info("Thread Ts: starting write", name)
+        self.value_dic[name] = value
+
+    def locked_write(self, name, value):
         # write value for a key
         logging.info("Thread %s: starting update", name)
-        self.value_dic[name] = value
-        pass
+        with self.lock:
+            self.value_dic[name] = value
 
-    def locked_update(self, name, value):
-        # first get the value of key name, then update it according
-        # to the value
-        with self._lock:
-            self.value_dic[name] = self.value_dic[name] + value
+
+    def locked_read(self, name):
+        with self.lock:
+            return self.value_dic[name]
 
     def read(self, name):
-        pass
+        with self.lock:
+            return self.value_dic[name]
+
 
 
 def thread_function1(name):
     logging.info("Thread %s: starting", name)
     for i in range(100000):
-        datastore.locked_update("x", 1)
+        #datastore.locked_update("x", 1)
+        datastore.lock.acquire()
+        datastore.write("x", 1)
+        datastore.lock.release()
     logging.info("Thread %s: finishing", name)
 
 
 def thread_function2(name):
     logging.info("Thread %s: starting", name)
     for i in range(100000):
-        datastore.locked_update("x", -1)
+        #datastore.locked_update("x", -1)
+        datastore.lock.acquire()
+        datastore.write("x", -1)
+        datastore.lock.release()
     logging.info("Thread %s: finishing", name)
 
 
@@ -50,8 +64,8 @@ if __name__ == "__main__":
     format = '%(asctime)s: %(message)s'
     logging.basicConfig(format=format, level=logging.INFO,
                         datefmt="%H:%M:%S")
-    datastore = LocalDataStore()
-    datastore.write("x", 1)
+    datastore = CausalDataStore()
+    datastore.locked_write("x", 1)
 
     threads = list()
     for index in range(2):
