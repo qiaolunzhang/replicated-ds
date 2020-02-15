@@ -1,6 +1,36 @@
 # replicated-ds
 distributed replicated data store
 
+## Definition of messages
+
+### direction of the message
+- client -> server
+- server -> client
+- server -> server
+
+the message from server is marked with "S"
+the message from client is marked with "C"
+
+### message type
+
+*Client -> server*
+
+- Write: "W"
+- Modify: "M"
+- Read: "R"
+- Quit: "Q"
+
+*Server -> client*
+
+- value: "V"
+
+*Server -> Server*
+
+- Update: "U"
+- Find: "F"
+
+### For client
+
 ## Server
 Receive the packets from:
 1. clients
