@@ -21,6 +21,6 @@ if __name__ == "__main__":
         x.start()
 
     for index, thread in enumerate(threads):
-        logging.info("Main: before joining  thread %d.", index)
+        logging.info("Main: before joining thread %d.", index)
         thread.join()
         logging.info("Main: thread %d done", index)

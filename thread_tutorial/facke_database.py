@@ -25,7 +25,7 @@ class FakeDatabase:
 
 
 if __name__ == "__main__":
-    format = "%s(asctime)s: %(message)s"
+    format = "%(asctime)s: %(message)s"
     logging.basicConfig(format=format, level=logging.INFO,
                         datefmt="%H:%M:%S")
 
