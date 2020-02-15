@@ -14,6 +14,11 @@ class ProcessThread(threading.Thread):
         self.RECV_MSG_LEN = 4
         print("New connection added: ", clientAddress)
 
+    def get_message_value_to_client(self, key, value):
+        msg = "S" + key + ":" + value
+        msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
+        return msg
+
     def receive_packet(self):
         tot_len = 0
         msg_len_pack = b""
@@ -32,7 +37,10 @@ class ProcessThread(threading.Thread):
         tot_len = 0
         while tot_len < msg_len:
             #msg = self.csocket.recv(self.RECV_BUFFER)
-            msg = self.csocket.recv(msg_len)
+            if (msg_len - tot_len) > self.RECV_BUFFER:
+                msg = self.csocket.recv(self.RECV_BUFFER)
+            else:
+                msg = self.csocket.recv(msg_len-tot_len)
             tot_len = tot_len + len(msg)
         msg = msg.decode('UTF-8')
         return msg
@@ -53,9 +61,13 @@ class ProcessThread(threading.Thread):
             datastore.lock.acquire()
             key = msg[1:]
             value = datastore.read(key)
-            self.csocket.send(str(value))
+            value = str(value)
+            message_to_client = self.get_message_value_to_client(key, value)
+            self.csocket.sendall(message_to_client)
             # todo: may also change this one to use packet length
-            value_update = self.csocket.recv(self.RECV_BUFFER)
+            #value_update = self.csocket.recv(self.RECV_BUFFER)
+            value_update = self.receive_packet()
+            value_update = value_update[1:].split(":")[1]
             datastore.write(key, value_update)
             datastore.lock.release()
 

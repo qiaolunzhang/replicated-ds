@@ -20,7 +20,7 @@ class CausalDataStore:
         pass
 
     def write(self, name, value):
-        logging.info("Thread Ts: starting write", name)
+        #logging.info("Thread Ts: starting write", name)
         self.value_dic[name] = value
 
     def locked_write(self, name, value):
@@ -35,8 +35,7 @@ class CausalDataStore:
             return self.value_dic[name]
 
     def read(self, name):
-        with self.lock:
-            return self.value_dic[name]
+        return self.value_dic[name]
 
 
 
