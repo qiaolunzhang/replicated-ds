@@ -15,7 +15,7 @@ class ProcessThread(threading.Thread):
         self.from_server = False
         self.num_replica = num_replica
         self.vector_clock = vector_clock
-        self.vector_clock[0] = 9
+        #self.vector_clock[0] = 9
         #self.vector_clock.append(3)
         #self.local_changed_dic = {}
         print("New connection added: ", clientAddress)
@@ -84,6 +84,7 @@ class ProcessThread(threading.Thread):
         """Actually this function can substitute the VectorHandlerThread we designed before"""
         print(msg)
         if msg[0] == "U":
+            # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5
             pass
         elif msg[0] == "F":
             pass

@@ -1,3 +1,4 @@
 .vscode/
 .idea/
 .datastore/__pycache__/
+datastore/__pycache__/

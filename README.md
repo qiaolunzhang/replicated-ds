@@ -55,3 +55,14 @@ https://stackoverflow.com/questions/3310049/proper-use-of-mutexes-in-python
 when we send a message to the server, we need to mark "Read", "Write", "Modify"
 
 https://realpython.com/intro-to-python-threading/
+
+### 20200217
+
+- The class VectorHandlerThread.py: in this class, implement both the functions of
+sending and receiving between relicas
+
+- VectorClocks.py: the operation about how wto solve vector clocks
+
+- Server.py: operations about issue the event when we receive vector clock from other replicas
+
+- One test Client.py: a client that only write one value to the server

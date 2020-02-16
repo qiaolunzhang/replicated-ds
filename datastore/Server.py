@@ -5,6 +5,7 @@ import logging
 import time
 from datastore.CausalDatastore import CausalDataStore
 from datastore.ProcessThread import ProcessThread
+from datastore.VectorClock import VectorClock
 
 def thread_function(name, test_list):
     logging.info("Thread %s: starting", name)
@@ -55,12 +56,12 @@ class Server():
                             self.LOCALHOST = line[1]
                             self.PORT = int(line[2])
                             self.local_replica_id = int(line[3])
-                        if line[0] == 'router_ip':
-                            self.router_host = line[1]
-                            self.router_port = int(line[2])
-                        if line[0] == 'visual_ip':
-                            self.visualize_host= line[1]
-                            self.visualize_port= int(line[2])
+                        if line[0] == 'replica_ip':
+                            replica_ip = line[1]
+                            replica_port = int(line[2])
+                            replica_id = int(line[3])
+                            # todo: add available replica information to VectorClock
+                            self.replica_dic[replica_id] = [replica_ip, replica_port]
 
         except Exception as e:
             print(Exception, ", ", e)
@@ -74,7 +75,8 @@ if __name__ == "__main__":
     #  You're free to mutate that object (if possible). However,
     #  integers are immutable. One workaround is to pass the integer
     #  in a container which can be mutated
-    vector_clock = [0]
+    num_replica = 2
+    vector_clock = VectorClock(num_replica, 0)
     num_replica = [1]
     datastore = CausalDataStore()
     e = threading.Event()
