@@ -1,2 +1,3 @@
 .vscode/
 .idea/
+.datastore/__pycache__/

@@ -16,7 +16,7 @@ class ProcessThread(threading.Thread):
         self.num_replica = num_replica
         self.vector_clock = vector_clock
         self.vector_clock[0] = 9
-        self.vector_clock.append(3)
+        #self.vector_clock.append(3)
         #self.local_changed_dic = {}
         print("New connection added: ", clientAddress)
 
@@ -31,14 +31,15 @@ class ProcessThread(threading.Thread):
         msg = ""
         # todo: add more control for length
         while tot_len < self.RECV_MSG_LEN:
-            print("Test")
+            #print("Test")
             msg_len_pack = self.csocket.recv(self.RECV_MSG_LEN)
             tot_len = tot_len + len(msg_len_pack)
-            print(msg_len_pack)
+            #print(msg_len_pack)
 
         msg_len = struct.unpack('>I', msg_len_pack)[0]
         msg_len = int(msg_len)
-        print("This is packet has length: ", msg_len)
+        # todo: remove to get packet output
+        #print("This is packet has length: ", msg_len)
 
         tot_len = 0
         while tot_len < msg_len:
@@ -52,7 +53,7 @@ class ProcessThread(threading.Thread):
         return msg
 
     def process_packet_client(self, msg):
-        print(msg)
+        #print(msg)
         if msg[0] == "Q":
             return "quit"
         elif msg[0] == "W":
@@ -81,13 +82,19 @@ class ProcessThread(threading.Thread):
 
     def process_packet_server(self, msg):
         """Actually this function can substitute the VectorHandlerThread we designed before"""
+        print(msg)
+        if msg[0] == "U":
+            pass
+        elif msg[0] == "F":
+            pass
         return ""
 
     def run(self):
         print("Connection from: ", self.clientAddress)
         while True:
             msg = self.receive_packet()
-            print(msg)
+            # todo: remove to print the received message
+            #print(msg)
             # todo: how to keep vector clock data from other server
             result = ""
             if msg[0] == "C":
