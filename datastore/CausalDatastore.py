@@ -8,7 +8,7 @@ class CausalDataStore:
         # keeps some key value in the memory
         self.value_dic = {}
         # keeps keys of the values needed to be stored in the database
-        self.updatedKey = list()
+        self.changed_value_dic = {}
         self.lock = threading.Lock()
 
     def locked_load_value(self, name):
@@ -22,12 +22,14 @@ class CausalDataStore:
     def write(self, name, value):
         #logging.info("Thread Ts: starting write", name)
         self.value_dic[name] = value
+        self.changed_value_dic[name] = value
 
     def locked_write(self, name, value):
         # write value for a key
         logging.info("Thread %s: starting update", name)
         with self.lock:
             self.value_dic[name] = value
+            self.changed_value_dic[name] = value
 
 
     def locked_read(self, name):
@@ -37,6 +39,11 @@ class CausalDataStore:
     def read(self, name):
         return self.value_dic[name]
 
+    def locked_propagate_to_replica(self):
+        with self.lock:
+            changed_value_dic = self.changed_value_dic
+            self.changed_value_dic = {}
+            return changed_value_dic
 
 
 def thread_function1(name):
