@@ -27,8 +27,10 @@ class VectorClock:
 
     def init_vector_clock_dic(self, vc_dic, local_id):
         print("Initing vector clock")
+        # set the local id here
         self.id = local_id
         self.num_replica = 1
+        # set the vector clock for local id
         self.vector_clock_dic[self.id] = 0
         for k, v in vc_dic.items():
             # replica_dic[replica_id] = [replica_ip, replica_port]
@@ -43,6 +45,8 @@ class VectorClock:
     def locked_add_received_vc(self, new_vc_key, new_vc_value):
         with self.lock:
             # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5
+            # new_vc_key is: sender_id:id1:value:id2:value:id3:value
+            # new_vc_value is: x:3:y:4:z:5
             self.received_vc_dict[new_vc_key] = new_vc_value
             self.received_vector_clocks.append([new_vc_key, new_vc_value])
 
@@ -50,9 +54,11 @@ class VectorClock:
         with self.lock:
             self.replica_dic[replica_id] = [replica_ip, replica_port]
 
+    """
     def locked_add_received_vector_clock(self, vector_clock):
         with self.lock:
             self.received_vector_clocks.append(vector_clock)
+    """
 
     def locked_send_vector_clock(self):
         try:
@@ -63,6 +69,45 @@ class VectorClock:
         except Exception as e:
             print(e)
 
+    def get_vector_clock_message_to_accept(self):
+        """
+        first change the vector clock, then change  the value, because there
+        is only one thread that is handling the vector clock
+        # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5
+        :return: the message that we need to update
+        """
+        try:
+            #flag = True
+            #accepted_vc_id = ""
+            for k, v in self.received_vc_dict.items():
+                flag = True
+                # compare the vector in k with self.vector_clock_dic
+                # todo: recheck the datatype here
+                key_to_received_vc_dict = k
+                k = k.split(":")
+                k = [int(e) for e in k]
+                vc_id = k[0]
+                vc_list = k[1:]
+                for i in range(len(vc_list) // 2):
+                    id_tmp = vc_list[2*i]
+                    clock_tmp = vc_list[2*i+1]
+                    if id_tmp == vc_id:
+                        if clock_tmp != self.vector_clock_dic[id_tmp] + 1:
+                            flag = False
+                    elif clock_tmp > self.vector_clock_dic[id_tmp]:
+                        flag = False
+                    if not flag:
+                        break
+                if flag:
+                    # pop actually moves the item from the dict
+                    self.vector_clock_dic[vc_id] = self.vector_clock_dic[vc_id] + 1
+                    return self.received_vc_dict.pop(key_to_received_vc_dict)
+            return ""
+        except Exception as e:
+            print(e)
+
+
+"""
     def locked_accept_vector_clock(self):
         # todo: reset the vector_clock function
         with self.lock:
@@ -80,3 +125,4 @@ class VectorClock:
                         continue
                 if flag:
                     self.vector_clock[id_check] = self.vector_clock[id_check] + 1
+"""

@@ -73,3 +73,18 @@ sending and receiving between relicas
 integer is larger than any other id of the replicas in the  system.
 We just keep all the ids that are used before. And use the id that
 is bigger than that.
+
+#### Communication between sever and server
+
+- If we update data, it is defined as follows: 
+
+```
+SUsender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5
+```
+So it start with S and U, S represents that it is the message from server, U represents
+that it is a message to update data.
+
+- some messages in ProcessThread.py, in function process_packet_server, in this class,
+we just receive message and save it in the class VectorClock
+
+- VectorHandlerThread: we handle new thread in this class
