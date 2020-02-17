@@ -66,3 +66,10 @@ sending and receiving between relicas
 - Server.py: operations about issue the event when we receive vector clock from other replicas
 
 - One test Client.py: a client that only write one value to the server
+
+#### Notes
+
+- if a replica wants to join, we can assign an integer to it, the
+integer is larger than any other id of the replicas in the  system.
+We just keep all the ids that are used before. And use the id that
+is bigger than that.

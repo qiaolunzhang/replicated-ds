@@ -1,6 +1,9 @@
 import struct
 import time
 import threading
+from threading import Event
+from datastore.CausalDatastore import CausalDataStore
+from datastore.VectorClock import VectorClock
 
 
 class VectorHandlerThread(threading.Thread):
@@ -8,19 +11,25 @@ class VectorHandlerThread(threading.Thread):
     1. The class for the sever to send the new data to other replica.
     2. Handles the received vector clock
     """
-    def __init__(self, datastore, vector_clock, replica_dic,
-                 num_replica, event):
+    def __init__(self, datastore: CausalDataStore, vector_clock: VectorClock, event: Event):
         threading.Thread.__init__(self)
         self.datastore = datastore
         self.vector_clock = vector_clock
-        self.replica_dic = replica_dic
-        self.num_replica = num_replica
+        #self.replica_dic = replica_dic
+        #self.num_replica = num_replica
         self.RECV_BUFFER = 4096
         self.RECV_MSG_LEN = 4
         self.e = event
 
     def propagate_to_replica(self):
-        pass
+        # get the newly changed value
+        changed_value_dic = self.datastore.locked_propagate_to_replica()
+        # get the vector clock and add it up with 1
+        if bool(changed_value_dic):
+            vector_clock_dic = self.vector_clock.locked_send_vector_clock()
+            print("The vector clock dic to send is: ", vector_clock_dic)
+        else:
+            print("The dict is empty")
 
     def run(self):
         print("Start the propagation thread.")
@@ -33,7 +42,11 @@ class VectorHandlerThread(threading.Thread):
                 # when new message from other replica arrives
                 # the server will put the message into VectorClock
                 # check the received vector clock
+                # we need to clear it after process the  vector clock
+                print("Now the event is set")
+                self.e.clear()
                 pass
             else:
                 # the time is over, propagate to the replica
+                print("Now propagate to replica")
                 self.propagate_to_replica()

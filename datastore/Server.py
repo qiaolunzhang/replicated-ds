@@ -6,6 +6,7 @@ import time
 from datastore.CausalDatastore import CausalDataStore
 from datastore.ProcessThread import ProcessThread
 from datastore.VectorClock import VectorClock
+from datastore.VectorHandlerThread import VectorHandlerThread
 
 def thread_function(name, test_list):
     logging.info("Thread %s: starting", name)
@@ -16,7 +17,7 @@ def thread_function(name, test_list):
 
 
 class Server():
-    def __init__(self, _datastore, _vector_clock, _num_replica, _e):
+    def __init__(self, _datastore, _vector_clock: VectorClock, _num_replica, _e):
         self.datastore = _datastore
         # todo: this need to be changed, add a database interface
         self.datastore.locked_write("x", 1)
@@ -24,10 +25,10 @@ class Server():
         self.PORT = 8080
         self.local_replica_id = 0
         self.replica_dic = {}
-        self.load_config()
 
         self.num_replica = _num_replica
         self.vector_clock = _vector_clock
+        self.load_config()
         # the threading.Event object
         self.e = _e
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -38,12 +39,14 @@ class Server():
         # test thread
         #x = threading.Thread(target=thread_function, args=(1, self.vector_clock))
         #x.start()
+        vector_handler_thread = VectorHandlerThread(self.datastore, self.vector_clock, self.e)
+        vector_handler_thread.start()
         while True:
             server_socket.listen(1)
             logging.info("A new conection")
             clientsock, clientAddress = server_socket.accept()
             newthread = ProcessThread(clientAddress, clientsock, self.datastore,
-                                      self.num_replica, self.vector_clock)
+                                      self.num_replica, self.vector_clock, self.e)
             newthread.start()
 
     def load_config(self):
@@ -56,12 +59,14 @@ class Server():
                             self.LOCALHOST = line[1]
                             self.PORT = int(line[2])
                             self.local_replica_id = int(line[3])
-                        if line[0] == 'replica_ip':
+                        elif line[0] == 'replica_ip':
+                            # notice the type
                             replica_ip = line[1]
                             replica_port = int(line[2])
                             replica_id = int(line[3])
                             # todo: add available replica information to VectorClock
                             self.replica_dic[replica_id] = [replica_ip, replica_port]
+                self.vector_clock.init_vector_clock_dic(self.replica_dic, self.local_replica_id)
 
         except Exception as e:
             print(Exception, ", ", e)

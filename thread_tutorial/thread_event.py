@@ -13,9 +13,11 @@ logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-9s) %(message)s',)
 
 def wait_for_event(e):
-    logging.debug('wait_for_event starting')
-    event_is_set = e.wait()
-    logging.debug('event set: %s', event_is_set)
+    while True:
+        logging.debug('wait_for_event starting')
+        event_is_set = e.wait()
+        logging.debug('event set: %s', event_is_set)
+        e.clear()
 
 def wait_for_event_timeout(e, t):
     while not e.isSet():
@@ -40,6 +42,7 @@ if __name__ == '__main__':
     t2.start()
 
     logging.debug('Waiting before calling Event.set()')
-    time.sleep(3)
-    e.set()
-    logging.debug('Event is set')
+    while True:
+        time.sleep(3)
+        e.set()
+        logging.debug('Event is set')

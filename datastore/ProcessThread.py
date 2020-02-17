@@ -1,10 +1,11 @@
 import struct
 import threading
-
+from threading import Event
+from datastore.VectorClock import VectorClock
 
 class ProcessThread(threading.Thread):
     def __init__(self, clientAddress, clientsocket, datastore,
-                 num_replica, vector_clock):
+                 num_replica, vector_clock: VectorClock, event: Event):
         threading.Thread.__init__(self)
         self.datastore = datastore
         self.clientAddress = clientAddress
@@ -15,6 +16,7 @@ class ProcessThread(threading.Thread):
         self.from_server = False
         self.num_replica = num_replica
         self.vector_clock = vector_clock
+        self.e = event
         #self.vector_clock[0] = 9
         #self.vector_clock.append(3)
         #self.local_changed_dic = {}
@@ -85,7 +87,9 @@ class ProcessThread(threading.Thread):
         print(msg)
         if msg[0] == "U":
             # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5
-            pass
+            msg = msg[1:].split("|")
+            self.vector_clock.locked_add_received_vc(msg[0], msg[1])
+            self.e.set()
         elif msg[0] == "F":
             pass
         return ""

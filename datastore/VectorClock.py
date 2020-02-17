@@ -8,10 +8,11 @@ class VectorClock:
     - VectorHandlerThread may change the vector clock value when receiving vector_clock from
     other replica
     """
-    def __init__(self, num_replica, id):
-        self.id = id
+    def __init__(self, num_replica, _id):
+        self.id = _id
         self.num_replica = num_replica
-        self.vector_clock = [0 for i in range(self.num_replica)]
+        #self.vector_clock = [0 for i in range(self.num_replica)]
+        self.vector_clock_dic = {}
         self.lock = threading.Lock()
         # the format of the element is:
         # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5
@@ -21,8 +22,23 @@ class VectorClock:
         # when we add/remove a new replica, this function need to be changed
         # e.g. [[id1, [2, 3, 5]], [id2, [4, 5, 6]]
         self.received_vector_clocks = []
-        self.replica_dic = []
+        self.replica_dic = {}
         self.lock = threading.Lock()
+
+    def init_vector_clock_dic(self, vc_dic, local_id):
+        print("Initing vector clock")
+        self.id = local_id
+        self.num_replica = 1
+        self.vector_clock_dic[self.id] = 0
+        for k, v in vc_dic.items():
+            # replica_dic[replica_id] = [replica_ip, replica_port]
+            # replica_id is int, replica_ip is string, replica_port is int
+            # stores the id, ip, port of each replica
+            self.replica_dic[k] = v
+            # initialize the vector_clock
+            self.vector_clock_dic[k] = 0
+            self.num_replica += 1
+        print(self.replica_dic)
 
     def locked_add_received_vc(self, new_vc_key, new_vc_value):
         with self.lock:
@@ -39,11 +55,16 @@ class VectorClock:
             self.received_vector_clocks.append(vector_clock)
 
     def locked_send_vector_clock(self):
-        with self.lock:
-            self.vector_clock[self.id-1] = self.vector_clock[self.id-1] + 1
-            return self.vector_clock
+        try:
+            # if there is new item changed, we do this operation
+            with self.lock:
+                self.vector_clock_dic[self.id] = self.vector_clock_dic[self.id] + 1
+                return self.vector_clock_dic
+        except Exception as e:
+            print(e)
 
     def locked_accept_vector_clock(self):
+        # todo: reset the vector_clock function
         with self.lock:
             # todo: change received_vector_clocks to dict
             for vc in self.received_vector_clocks:
