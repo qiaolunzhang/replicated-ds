@@ -42,6 +42,9 @@ class VectorClock:
             self.num_replica += 1
         print(self.replica_dic)
 
+    def get_replica_dic(self):
+        return self.replica_dic
+
     def locked_add_received_vc(self, new_vc_key, new_vc_value):
         with self.lock:
             # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5
@@ -60,12 +63,19 @@ class VectorClock:
             self.received_vector_clocks.append(vector_clock)
     """
 
-    def locked_send_vector_clock(self):
+    def locked_get_send_vector_clock_str(self):
+        """
+        :return: a string 2:0:0:1:1:2:1, the first number is the id of the replica,
+                the following number is the id: clock
+        """
         try:
             # if there is new item changed, we do this operation
             with self.lock:
                 self.vector_clock_dic[self.id] = self.vector_clock_dic[self.id] + 1
-                return self.vector_clock_dic
+                send_vector_clock_str = str(self.id)
+                for k, v in self.vector_clock_dic.items():
+                    send_vector_clock_str = send_vector_clock_str + ":" + str(k) + ":" + str(v)
+                return send_vector_clock_str
         except Exception as e:
             print(e)
 

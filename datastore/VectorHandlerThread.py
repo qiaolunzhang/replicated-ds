@@ -1,5 +1,6 @@
 import struct
 import time
+import socket
 import threading
 from threading import Event
 from datastore.CausalDatastore import CausalDataStore
@@ -22,14 +23,52 @@ class VectorHandlerThread(threading.Thread):
         self.RECV_MSG_LEN = 4
         self.e = event
 
+    def create_propagate_message(self, send_vc_str):
+        """
+        create the second message we send to the server to update the value
+        :param key: the key of the value that we want to update
+        :param value: the value that we update the data with
+        :return:
+        """
+        msg = "SU" + send_vc_str
+        msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
+        return msg
+
+    def create_quit(self):
+        msg = "S" + "Q"
+        msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
+        return msg
+
     def propagate_to_replica(self):
         # get the newly changed value
         changed_value_dic = self.datastore.locked_propagate_to_replica()
         # get the vector clock and add it up with 1
         if bool(changed_value_dic):
-            vector_clock_dic = self.vector_clock.locked_send_vector_clock()
-            print("The vector clock dic to send is: ", vector_clock_dic)
-            # todo: send to other server function
+            send_vector_clock_str = self.vector_clock.locked_get_send_vector_clock_str()
+            send_vector_clock_str = send_vector_clock_str + "|"
+            # changed_value_dic is a string representation of the vector : 2:0:0:1:1:2:1
+            # vector_clock_dic is a dict of {id: clock}, id is a string, clock is an int
+            # we want to get 2:0:0:1:1:2:1|x:4:y:5:z:6
+            changed_value_list = []
+            for k, v in changed_value_dic.items():
+                changed_value_list.append(str(k))
+                changed_value_list.append(str(v))
+            send_vector_clock_str = send_vector_clock_str + ":".join(changed_value_list)
+            msg = self.create_propagate_message(send_vector_clock_str)
+            # loop and send to all the replica
+            replica_dic = self.vector_clock.get_replica_dic()
+            # todo: maybe also use thread here
+            for k, v in replica_dic.items():
+                replica_ip = v[0]
+                replica_port = v[1]
+                propagate_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                propagate_sock.connect((replica_ip, replica_port))
+                propagate_sock.sendall(msg)
+
+                quit_msg = self.create_quit()
+                propagate_sock.sendall(quit_msg)
+            print("The vector clock dic to send is: ", send_vector_clock_str)
+            # todo: check send to other server function
         else:
             print("The dict is empty")
 

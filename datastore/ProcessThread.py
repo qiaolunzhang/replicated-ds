@@ -85,11 +85,21 @@ class ProcessThread(threading.Thread):
     def process_packet_server(self, msg):
         """Actually this function can substitute the VectorHandlerThread we designed before"""
         print(msg)
+        # update the value
+        if msg[0] == "Q":
+            return "quit"
         if msg[0] == "U":
             # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5
             msg = msg[1:].split("|")
             self.vector_clock.locked_add_received_vc(msg[0], msg[1])
             self.e.set()
+        # join the data store
+        elif msg[0] == "J":
+            # store another dict in the VectorClock
+            pass
+        # leave the data store
+        elif msg[0] == "L":
+            pass
         elif msg[0] == "F":
             pass
         return ""
