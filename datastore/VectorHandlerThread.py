@@ -72,8 +72,9 @@ class VectorHandlerThread(threading.Thread):
                 propagate_sock.sendall(quit_msg)
             print("The vector clock dic to send is: ", send_vector_clock_str)
             # todo: check send to other server function
-        else:
-            print("The dict is empty")
+        # just remove this line: do nothing if there is no change
+        #else:
+        #    print("The dict is empty")
 
     # todo: check the accept vector clock function
     def accept_vector_clocks(self):
@@ -110,5 +111,5 @@ class VectorHandlerThread(threading.Thread):
                 pass
             else:
                 # the time is over, propagate to the replica
-                print("Now propagate to replica")
+                #print("Now propagate to replica")
                 self.propagate_to_replica()
