@@ -50,6 +50,10 @@ https://stackoverflow.com/questions/3310049/proper-use-of-mutexes-in-python
 ## Todo
 ### data store
 
+add the interaction with the database, solve the data to database
+or load data from database
+
+
 ### how to avoid race condition
 
 when we send a message to the server, we need to mark "Read", "Write", "Modify"
@@ -88,3 +92,16 @@ that it is a message to update data.
 we just receive message and save it in the class VectorClock
 
 - VectorHandlerThread: we handle new thread in this class
+
+### 2020/02/19
+Actually, only looking at changed value, may have a problem, that
+is we will go to an infinite loop!
+Because once I changed the value, I send to the other replica. This will 
+makes the other replica send the value to me.
+
+There are two members in CausalDatastore:
+
+- self.value_dic{}
+- 
+
+maybe just need to propagate local change!!!
