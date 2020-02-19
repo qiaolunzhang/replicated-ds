@@ -41,6 +41,9 @@ class VectorHandlerThread(threading.Thread):
 
     def propagate_to_replica(self):
         # get the newly changed value
+        # check if the local datastore has been changed by local client
+        if not self.datastore.check_local_change():
+            return
         changed_value_dic = self.datastore.locked_propagate_to_replica()
         # get the vector clock and add it up with 1
         if bool(changed_value_dic):
@@ -88,7 +91,7 @@ class VectorHandlerThread(threading.Thread):
                 for i in range(len(value_to_update_list) // 2):
                     name_tmp = value_to_update_list[2 * i]
                     value_tmp = value_to_update_list[2 * i + 1]
-                    self.datastore.locked_write(name_tmp, value_tmp)
+                    self.datastore.locked_write_from_replica(name_tmp, value_tmp)
 
     def run(self):
         print("Start the propagation thread.")

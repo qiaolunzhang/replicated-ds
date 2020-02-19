@@ -90,12 +90,12 @@ def receive_packet(client):
     print(msg)
     return msg
 
-def loop_update1(index, server_ip, server_port):
+def loop_update1(index, server_ip, server_port, loop_time_value):
     #SERVER = "127.0.0.1"
     #PORT = 8080
     client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client1.connect((server_ip, server_port))
-    for i in range(10000):
+    for i in range(loop_time_value):
         key = "x"
         message = create_update_get(key)
         # send the message to request for the data
@@ -107,18 +107,21 @@ def loop_update1(index, server_ip, server_port):
         value_receive = key_value[1]
 
         print(key_receive)
-        value = int(value_receive) + 1
+        if value_receive == "":
+            value = 1
+        else:
+            value = int(value_receive) + 1
         message = create_update_change(key, str(value))
         client1.sendall(message)
     message = create_quit()
     client1.sendall(message)
 
-def loop_update2(index, server_ip, server_port):
+def loop_update2(index, server_ip, server_port, loop_time_value):
     #SERVER = "127.0.0.1"
     #PORT = 8080
     client2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client2.connect((server_ip, server_port))
-    for i in range(10000):
+    for i in range(loop_time_value):
         key = "x"
         message = create_update_get(key)
         # send the message to request for the data
@@ -130,7 +133,11 @@ def loop_update2(index, server_ip, server_port):
         value_receive = key_value[1]
 
         print(key_receive)
-        value = int(value_receive) - 1
+        if value_receive == "":
+            value = -1
+        else:
+            value = int(value_receive) - 1
+
         message = create_update_change(key, str(value))
         client2.sendall(message)
     message = create_quit()
@@ -156,10 +163,14 @@ if __name__ == "__main__":
     SERVER_IP, SERVER_PORT = load_config()
     threads = list()
         #logging.info("Main: create and start thread %d.", index)
-    x = threading.Thread(target=loop_update1, args=(1, SERVER_IP, SERVER_PORT))
+
+    loop_time1 = 3
+    x = threading.Thread(target=loop_update1, args=(1, SERVER_IP, SERVER_PORT, loop_time1))
     threads.append(x)
     x.start()
-    x = threading.Thread(target=loop_update2, args=(2, SERVER_IP, SERVER_PORT))
+
+    loop_time2 = 2
+    x = threading.Thread(target=loop_update2, args=(2, SERVER_IP, SERVER_PORT, loop_time2))
     threads.append(x)
     x.start()
 

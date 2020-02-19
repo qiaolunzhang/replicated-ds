@@ -8,6 +8,9 @@ class CausalDataStore:
         # keeps some key value in the memory
         self.value_dic = {}
         # keeps keys of the values needed to be stored in the database
+        # stores the changes made by the local client
+        self.local_changed_value_dic = {}
+        # stores both changes made bby the local client and the replica
         self.changed_value_dic = {}
         self.lock = threading.Lock()
 
@@ -17,10 +20,16 @@ class CausalDataStore:
         pass
 
     def locked_store_to_db(self):
+        # todo write to database
         pass
 
     def write(self, name, value):
         #logging.info("Thread Ts: starting write", name)
+        self.value_dic[name] = value
+        self.changed_value_dic[name] = value
+        self.local_changed_value_dic[name] = value
+
+    def write_from_replica(self, name, value):
         self.value_dic[name] = value
         self.changed_value_dic[name] = value
 
@@ -29,21 +38,44 @@ class CausalDataStore:
         logging.info("Thread %s: starting update", name)
         with self.lock:
             self.value_dic[name] = value
+            self.changed_value_dic[name] =value
+            self.local_changed_value_dic[name] = value
+
+    def locked_write_from_replica(self, name, value):
+        with self.lock:
+            self.value_dic[name] = value
             self.changed_value_dic[name] = value
 
 
     def locked_read(self, name):
         with self.lock:
-            return self.value_dic[name]
+            if name in self.value_dic.keys():
+                return self.value_dic[name]
+            else:
+                return ""
 
     def read(self, name):
-        return self.value_dic[name]
+        if name in self.value_dic.keys():
+            return self.value_dic[name]
+        else:
+            return ""
 
     def locked_propagate_to_replica(self):
         with self.lock:
             changed_value_dic = self.changed_value_dic
             self.changed_value_dic = {}
+            self.local_changed_value_dic = {}
             return changed_value_dic
+
+    def check_local_change(self):
+        """
+        check whether there are changes from local clients
+        :return:
+        """
+        if bool(self.local_changed_value_dic):
+            return True
+        else:
+            return False
 
 
 def thread_function1(name):
