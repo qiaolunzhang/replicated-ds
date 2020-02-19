@@ -20,7 +20,8 @@ class Server():
     def __init__(self, _datastore, _vector_clock: VectorClock, _num_replica, _e):
         self.datastore = _datastore
         # todo: this need to be changed, add a database interface
-        self.datastore.locked_write("x", 1)
+        # remove the write here, it is not performed by client, but can be used for testing
+        #self.datastore.locked_write("x", 1)
         self.LOCALHOST = "127.0.0.1"
         self.PORT = 8080
         self.local_replica_id = 0
