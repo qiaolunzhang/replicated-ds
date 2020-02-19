@@ -11,7 +11,7 @@ class CausalDataStore:
         # stores the changes made by the local client
         self.local_changed_value_dic = {}
         # stores both changes made bby the local client and the replica
-        self.changed_value_dic = {}
+        #self.changed_value_dic = {}
         self.lock = threading.Lock()
 
     def locked_load_value(self, name):
@@ -26,26 +26,25 @@ class CausalDataStore:
     def write(self, name, value):
         #logging.info("Thread Ts: starting write", name)
         self.value_dic[name] = value
-        self.changed_value_dic[name] = value
+        #self.changed_value_dic[name] = value
         self.local_changed_value_dic[name] = value
 
     def write_from_replica(self, name, value):
         self.value_dic[name] = value
-        self.changed_value_dic[name] = value
+        #self.changed_value_dic[name] = value
 
     def locked_write(self, name, value):
         # write value for a key
         logging.info("Thread %s: starting update", name)
         with self.lock:
             self.value_dic[name] = value
-            self.changed_value_dic[name] =value
+            #self.changed_value_dic[name] =value
             self.local_changed_value_dic[name] = value
 
     def locked_write_from_replica(self, name, value):
         with self.lock:
             self.value_dic[name] = value
-            self.changed_value_dic[name] = value
-
+            #self.changed_value_dic[name] = value
 
     def locked_read(self, name):
         with self.lock:
@@ -63,7 +62,7 @@ class CausalDataStore:
     def locked_propagate_to_replica(self):
         with self.lock:
             changed_value_dic = self.changed_value_dic
-            self.changed_value_dic = {}
+            #self.changed_value_dic = {}
             self.local_changed_value_dic = {}
             return changed_value_dic
 
