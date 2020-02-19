@@ -61,7 +61,7 @@ class CausalDataStore:
 
     def locked_propagate_to_replica(self):
         with self.lock:
-            changed_value_dic = self.changed_value_dic
+            changed_value_dic = self.local_changed_value_dic
             #self.changed_value_dic = {}
             self.local_changed_value_dic = {}
             return changed_value_dic
