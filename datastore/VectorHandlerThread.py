@@ -88,6 +88,7 @@ class VectorHandlerThread(threading.Thread):
                 break
             else:
                 # change the value in VectorClock: x:3:y:4:z:5
+                print("Received value from replica: ", value_to_update)
                 value_to_update_list = value_to_update.split(":")
                 for i in range(len(value_to_update_list) // 2):
                     name_tmp = value_to_update_list[2 * i]
@@ -100,13 +101,14 @@ class VectorHandlerThread(threading.Thread):
             event_is_set = self.e.wait(5)
             # time.sleep(5)
             # the value and vector are related, so we put all the
-            # actions relted to vector_clock here
+            # actions related to vector_clock here
             if event_is_set:
                 # when new message from other replica arrives
                 # the server will put the message into VectorClock
                 # check the received vector clock
                 # we need to clear it after process the  vector clock
                 print("Now the event is set")
+                self.accept_vector_clocks()
                 self.e.clear()
                 pass
             else:
