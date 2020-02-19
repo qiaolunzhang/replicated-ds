@@ -7,6 +7,21 @@ from datastore.CausalDatastore import CausalDataStore
 from datastore.VectorClock import VectorClock
 
 
+def create_quit():
+    msg = "S" + "Q"
+    msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
+    return msg
+
+
+def propagate_thread_function(replica_ip_str, replica_port_int, msg_str):
+    propagate_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    propagate_sock.connect((replica_ip_str, replica_port_int))
+    propagate_sock.sendall(msg_str)
+
+    quit_msg = create_quit()
+    propagate_sock.sendall(quit_msg)
+
+
 class VectorHandlerThread(threading.Thread):
     """
     1. The class for the sever to send the new data to other replica.
@@ -34,10 +49,6 @@ class VectorHandlerThread(threading.Thread):
         msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
         return msg
 
-    def create_quit(self):
-        msg = "S" + "Q"
-        msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
-        return msg
 
     def propagate_to_replica(self):
         # get the newly changed value
@@ -61,15 +72,23 @@ class VectorHandlerThread(threading.Thread):
             # loop and send to all the replica
             replica_dic = self.vector_clock.get_replica_dic()
             # todo: maybe also use thread here
+            threads = list()
             for k, v in replica_dic.items():
                 replica_ip = v[0]
                 replica_port = v[1]
+                x = threading.Thread(target=propagate_thread_function, args=(replica_ip, replica_port, msg))
+                threads.append(x)
+                x.start()
+            for index, thread in enumerate(threads):
+                thread.join()
+                """
                 propagate_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 propagate_sock.connect((replica_ip, replica_port))
                 propagate_sock.sendall(msg)
 
-                quit_msg = self.create_quit()
+                quit_msg = create_quit()
                 propagate_sock.sendall(quit_msg)
+                """
             print("The vector clock dic to send is: ", send_vector_clock_str)
             # todo: check send to other server function
         # just remove this line: do nothing if there is no change
