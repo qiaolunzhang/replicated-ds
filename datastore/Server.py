@@ -7,6 +7,7 @@ from datastore.CausalDatastore import CausalDataStore
 from datastore.ProcessThread import ProcessThread
 from datastore.VectorClock import VectorClock
 from datastore.VectorHandlerThread import VectorHandlerThread
+from datastore.ControlThread import ControlThread
 
 def thread_function(name, test_list):
     logging.info("Thread %s: starting", name)
@@ -42,6 +43,10 @@ class Server():
         #x.start()
         vector_handler_thread = VectorHandlerThread(self.datastore, self.vector_clock, self.e)
         vector_handler_thread.start()
+        # start the control thread
+        control_thread = ControlThread(self.datastore, self.vector_clock)
+        # use function start instead of run
+        control_thread.start()
         while True:
             server_socket.listen(1)
             logging.info("A new conection")
