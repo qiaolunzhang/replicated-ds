@@ -124,7 +124,8 @@ class ProcessThread(threading.Thread):
         elif msg[0] == "J":
             replica_str = self.vector_clock.get_replica_str()
             # todo: make a field about the message length
-            self.csocket.sendall(replica_str)
+            replica_msg = self.get_message_to_new_replica(replica_str)
+            self.csocket.sendall(replica_msg)
             pass
             # store another dict in the VectorClock
         # leave the data store
