@@ -68,6 +68,9 @@ class ControlThread(threading.Thread):
         self.join_client.sendall(join_msg)
         msg = self.receive_packet()
         print(msg)
+        quit_msg = create_quit()
+        self.join_client.sendall(quit_msg)
+        self.join_client.close()
 
     def run(self):
         while True:
