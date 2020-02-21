@@ -10,7 +10,7 @@ class Client:
 
     def load_config(self):
         try:
-            with open('datastore/config/client.conf') as f:
+            with open('config/client.conf') as f:
                 for line in f:
                     if line[0] != '#':
                         line = line.split()
@@ -145,7 +145,7 @@ def loop_update2(index, server_ip, server_port, loop_time_value):
 
 def load_config():
     try:
-        with open('datastore/config/client.conf') as f:
+        with open('config/client.conf') as f:
             for line in f:
                 if line[0] != '#':
                     line = line.split()

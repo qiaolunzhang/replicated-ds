@@ -1,70 +1,101 @@
 import socket
 import threading
 import struct
-class ClientThread(threading.Thread):
-    def __init__(self, clientAddress, clientsocket):
-        threading.Thread.__init__(self)
-        self.clientAddress = clientAddress
-        self.csocket = clientsocket
-        print("New connection added: ", clientAddress)
-    def run(self):
-        print("Connection from: ", self.clientAddress)
-        msg = ''
+import logging
+import time
+from datastore.CausalDatastore import CausalDataStore
+from datastore.ProcessThread import ProcessThread
+from datastore.VectorClock import VectorClock
+from datastore.VectorHandlerThread import VectorHandlerThread
+from datastore.ControlThread import ControlThread
 
-        data = self.csocket.recv(2048)
-        msg = data.decode()
-        print(msg)
-        self.csocket.send(bytes(msg, 'UTF-8'))
+def thread_function(name, test_list):
+    logging.info("Thread %s: starting", name)
+    while True:
+        time.sleep(2)
+        print(test_list)
+    logging.info("Thread %s: finishing", name)
 
+
+class Server():
+    def __init__(self, _datastore, _vector_clock: VectorClock, _num_replica, _e):
+        self.datastore = _datastore
+        # todo: this need to be changed, add a database interface
+        # remove the write here, it is not performed by client, but can be used for testing
+        #self.datastore.locked_write("x", 1)
+        self.LOCALHOST = "127.0.0.1"
+        self.PORT = 8080
+        self.local_replica_id = 0
+        self.replica_dic = {}
+
+        self.num_replica = _num_replica
+        self.vector_clock = _vector_clock
+        self.load_config()
+        # is_partition means that this replica disconnects with other replica
+        if bool(self.replica_dic):
+            self.is_partition = False
+        else:
+            self.is_partition = True
+
+        # the threading.Event object
+        self.e = _e
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_socket.bind((self.LOCALHOST, self.PORT))
+        print("Server started")
+        print("Waiting for client request...")
+        # test thread
+        #x = threading.Thread(target=thread_function, args=(1, self.vector_clock))
+        #x.start()
+        vector_handler_thread = VectorHandlerThread(self.datastore, self.vector_clock, self.e)
+        vector_handler_thread.start()
+        # start the control thread
+        control_thread = ControlThread(self.datastore, self.vector_clock)
+        # use function start instead of run
+        control_thread.start()
         while True:
-            # get the whole packet length
-            # get the vector clock length (just to check if the vector is the same length
-            # value_length = packet_length - packet_length_header - vector_clock_length_header - vector_clock_length
-            # get the value
-            print("started")
-            tot_len = 0
-            while tot_len < 4:
-                key_length_pack = self.csocket.recv(4)
-                tot_len = tot_len + len(key_length_pack)
+            server_socket.listen(1)
+            logging.info("A new conection")
+            clientsock, clientAddress = server_socket.accept()
+            newthread = ProcessThread(clientAddress, clientsock, self.datastore,
+                                      self.num_replica, self.vector_clock, self.e)
+            newthread.start()
 
-            key_length = struct.unpack('>I', key_length_pack)[0]
-            print(key_length)
-            tot_len = 0
-            while tot_len < 4:
-                value_length_apck = self.csocket.recv(4)
-                tot_len = tot_len + len(value_length_apck)
-            value_length = struct.unpack('>I', value_length_apck)[0]
-            tot_len = 0
-            while tot_len < key_length:
-                key = self.csocket.recv(key_length)
-                tot_len = tot_len + len(key)
-            tot_len = 0
-            while tot_len < value_length:
-                value = self.csocket.recv(value_length)
-                tot_len = tot_len + len(value)
-            print("key is: ", key)
-            print("value is: ", value)
+    def load_config(self):
+        try:
+            with open('config/server.conf') as f:
+                for line in f:
+                    if line[0] != '#':
+                        line = line.split()
+                        if line[0] == 'local_ip':
+                            self.LOCALHOST = line[1]
+                            self.PORT = int(line[2])
+                            self.local_replica_id = int(line[3])
+                        elif line[0] == 'replica_ip':
+                            # notice the type
+                            replica_ip = line[1]
+                            replica_port = int(line[2])
+                            replica_id = int(line[3])
+                            # todo: add available replica information to VectorClock
+                            self.replica_dic[replica_id] = [replica_ip, replica_port]
+                self.vector_clock.init_vector_clock_dic(self.replica_dic, self.local_replica_id)
 
-            data = self.csocket.recv(2048)
-            msg = data.decode()
-            if msg == 'bye':
-                break
-            print("from client", msg)
-            data_store.append((msg))
-            print(data_store)
-        self.csocket.send(bytes(msg, 'UTF-8'))
-        print("Client at ", self.clientAddress, " disconnected...")
+        except Exception as e:
+            print(Exception, ", ", e)
 
-LOCALHOST = "127.0.0.1"
-PORT = 8080
-data_store = ["original"]
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server.bind((LOCALHOST, PORT))
-print("Server started")
-print("Waiting for client request...")
-while True:
-    server.listen(1)
-    clientsock, clientAddress = server.accept()
-    newthread = ClientThread(clientAddress, clientsock)
-    newthread.start()
+
+
+if __name__ == "__main__":
+    format = '%(asctime)s: %(message)s'
+    logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
+    #  You're free to mutate that object (if possible). However,
+    #  integers are immutable. One workaround is to pass the integer
+    #  in a container which can be mutated
+    num_replica = 2
+    vector_clock = VectorClock(num_replica, 0)
+    num_replica = [1]
+    datastore = CausalDataStore()
+    e = threading.Event()
+    server = Server(datastore, vector_clock, num_replica, e)
+
