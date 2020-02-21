@@ -31,6 +31,12 @@ class Server():
         self.num_replica = _num_replica
         self.vector_clock = _vector_clock
         self.load_config()
+        # is_partition means that this replica disconnects with other replica
+        if bool(self.replica_dic):
+            self.is_partition = False
+        else:
+            self.is_partition = True
+
         # the threading.Event object
         self.e = _e
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

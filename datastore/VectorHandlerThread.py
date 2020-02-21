@@ -127,10 +127,17 @@ class VectorHandlerThread(threading.Thread):
                 # check the received vector clock
                 # we need to clear it after process the  vector clock
                 print("Now the event is set")
-                self.accept_vector_clocks()
+                if self.vector_clock.check_is_partition():
+                    self.vector_clock.check_receive_from_all()
+                else:
+                    self.vector_clock.accept_vector_clocks()
+                    # if we can accept
+                    self.vector_clock.reset_vector_clock()
+                    # reset the partition state
                 self.e.clear()
                 pass
             else:
                 # the time is over, propagate to the replica
                 #print("Now propagate to replica")
-                self.propagate_to_replica()
+                if not self.vector_clock.check_is_partition():
+                    self.propagate_to_replica()

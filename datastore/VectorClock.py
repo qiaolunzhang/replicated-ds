@@ -11,6 +11,7 @@ class VectorClock:
     def __init__(self, num_replica, _id):
         self.id = _id
         self.num_replica = num_replica
+        self.is_partition = True
         #self.vector_clock = [0 for i in range(self.num_replica)]
         self.vector_clock_dic = {}
         self.lock = threading.Lock()
@@ -23,7 +24,20 @@ class VectorClock:
         # e.g. [[id1, [2, 3, 5]], [id2, [4, 5, 6]]
         self.received_vector_clocks = []
         self.replica_dic = {}
+        self.new_id_list = []
         self.lock = threading.Lock()
+
+    def assign_new_id(self):
+        # the id and port are both integer
+        ids_now = self.replica_dic.keys()
+        tmp_id = 1
+        while tmp_id in ids_now or tmp_id in self.new_id_list:
+            tmp_id = tmp_id + 1
+        self.new_id_list.append(tmp_id)
+        # it's an int
+        return tmp_id
+
+
 
     def init_vector_clock_dic(self, vc_dic, local_id):
         print("Initing vector clock")
@@ -32,6 +46,8 @@ class VectorClock:
         self.num_replica = 1
         # set the vector clock for local id
         self.vector_clock_dic[self.id] = 0
+        if bool(self.vector_clock_dic):
+            self.is_partition = False
         for k, v in vc_dic.items():
             # replica_dic[replica_id] = [replica_ip, replica_port]
             # replica_id is int, replica_ip is string, replica_port is int
@@ -41,6 +57,23 @@ class VectorClock:
             self.vector_clock_dic[k] = 0
             self.num_replica += 1
         print(self.replica_dic)
+
+    def set_partition_state(self, is_partition):
+        # if is_partition is True, the replica is disconnected with all other replica
+        # otherwise, it is connected with other replica
+        self.is_partition = is_partition
+
+    def check_is_partition(self):
+        return self.is_partition
+
+    def get_replica_str(self):
+        replica_str_list = []
+        for k, v in self.replica_dic.items():
+            replica_str_tmp = str(k) + ":" + str(v[0])
+            replica_str_tmp = replica_str_tmp + ":" + str(v[1])
+            replica_str_list.append(replica_str_tmp)
+        replica_str = "|".join(replica_str_list)
+        return replica_str
 
     def get_replica_dic(self):
         return self.replica_dic

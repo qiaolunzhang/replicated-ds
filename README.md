@@ -105,3 +105,14 @@ There are two members in CausalDatastore:
 - 
 
 maybe just need to propagate local change!!!
+
+### 2020/02/21
+
+how to join a new replica
+
+- 1.start to send to one replica
+
+- 2.the replica send to all replica(including the new joiner)
+
+
+

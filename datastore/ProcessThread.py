@@ -82,6 +82,19 @@ class ProcessThread(threading.Thread):
 
         return ""
 
+    def get_message_to_new_replica(self, replica_msg):
+        msg = "S" + replica_msg
+        msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
+        return msg
+
+    def process_packet_join(self, msg):
+        replica_str = self.vector_clock.get_replica_str()
+        new_id = self.vector_clock.assign_new_id()
+        # send back new_id|id1:ip|id2:ip2
+        replica_msg = new_id + "|" + replica_str
+        replica_msg = self.get_message_to_new_replica(replica_msg)
+        self.csocket.sendall(replica_msg)
+
     def process_packet_server(self, msg):
         """Actually this function can substitute the VectorHandlerThread we designed before"""
         print(msg)
@@ -91,12 +104,29 @@ class ProcessThread(threading.Thread):
         if msg[0] == "U":
             # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5
             msg = msg[1:].split("|")
-            self.vector_clock.locked_add_received_vc(msg[0], msg[1])
+            if len(msg) == 2:
+                self.vector_clock.locked_add_received_vc(msg[0], msg[1])
+            elif len(msg) == 3 and msg[3] == "J":
+                # actually its the message sent by the follower
+                # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5|J
+                if self.vector_clock.check_is_partition():
+                    self.vector_clock.do_something()
+                else:
+                    self.vector_clock.locked_add_received_vc(msg[0], msg[1])
+            elif len(msg) == 4 and msg[3] == "J":
+                # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5|J|new_replica_ip:new_replica_port
+                # actually it's the message received by the follower
+                self.vector_clock.locked_add_received_vc(msg[0], msg[1])
+                # todo: make the function
+                self.set_received_start_vc(msg[0], msg[2])
             self.e.set()
         # join the data store
         elif msg[0] == "J":
-            # store another dict in the VectorClock
+            replica_str = self.vector_clock.get_replica_str()
+            # todo: make a field about the message length
+            self.csocket.sendall(replica_str)
             pass
+            # store another dict in the VectorClock
         # leave the data store
         elif msg[0] == "L":
             pass
