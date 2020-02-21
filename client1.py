@@ -3,6 +3,26 @@ import struct
 import threading
 import time
 
+class Client:
+    def __init__(self):
+        self.SERVER_IP = "127.0.0.1"
+        self.SERVER_PORT = 8080
+
+    def load_config(self):
+        try:
+            with open('datastore/config/client.conf') as f:
+                for line in f:
+                    if line[0] != '#':
+                        line = line.split()
+                        if line[0] == 'server_ip':
+                            self.host = line[1]
+                            self.port = int(line[2])
+        except Exception as e:
+            print(e)
+
+    def write(self, _key, _value):
+        pass
+
 def create_write(key, value):
     """
     create the message to sent when we write the datastore
@@ -70,12 +90,12 @@ def receive_packet(client):
     print(msg)
     return msg
 
-def loop_update1(index):
-    SERVER = "192.168.221.1"
-    PORT = 8080
+def loop_update1(index, server_ip, server_port, loop_time_value):
+    #SERVER = "127.0.0.1"
+    #PORT = 8080
     client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client1.connect((SERVER, PORT))
-    for i in range(10000):
+    client1.connect((server_ip, server_port))
+    for i in range(loop_time_value):
         key = "x"
         message = create_update_get(key)
         # send the message to request for the data
@@ -87,18 +107,21 @@ def loop_update1(index):
         value_receive = key_value[1]
 
         print(key_receive)
-        value = int(value_receive) + 1
+        if value_receive == "":
+            value = 1
+        else:
+            value = int(value_receive) + 1
         message = create_update_change(key, str(value))
         client1.sendall(message)
     message = create_quit()
     client1.sendall(message)
 
-def loop_update2(index):
-    SERVER = "192.168.221.1"
-    PORT = 8080
+def loop_update2(index, server_ip, server_port, loop_time_value):
+    #SERVER = "127.0.0.1"
+    #PORT = 8080
     client2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client2.connect((SERVER, PORT))
-    for i in range(10000):
+    client2.connect((server_ip, server_port))
+    for i in range(loop_time_value):
         key = "x"
         message = create_update_get(key)
         # send the message to request for the data
@@ -110,52 +133,44 @@ def loop_update2(index):
         value_receive = key_value[1]
 
         print(key_receive)
-        value = int(value_receive) - 1
+        if value_receive == "":
+            value = -1
+        else:
+            value = int(value_receive) - 1
+
         message = create_update_change(key, str(value))
         client2.sendall(message)
     message = create_quit()
     client2.sendall(message)
 
+def load_config():
+    try:
+        with open('datastore/config/client.conf') as f:
+            for line in f:
+                if line[0] != '#':
+                    line = line.split()
+                    if line[0] == 'server_ip':
+                        host = line[1]
+                        port = int(line[2])
+    except Exception as e:
+        print(e)
+    return host, port
+
 
 if __name__ == "__main__":
-    SERVER = "192.168.221.1"
-    PORT = 8080
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((SERVER, PORT))
-    #in_data = client.recv(1024)
-    #print("From Server: ", in_data.decode())
-
-    key = "x"
-    value = str(3)
-    message = create_write(key, value)
-    #client.sendall(bytes(message, 'UTF-8'))
-    print(message)
-    client.sendall(message)
-    #in_data = client.recv(2048)
-
-    for i in range(3):
-        time.sleep(0.1)
-        key = "x"
-        message = create_update_get(key)
-        # send the message to request for the data
-        client.sendall(message)
-        #value = client.recv(1024)
-        key_value = receive_packet(client)
-        key_value = key_value[1:].split(":")
-        key_receive = key_value[0]
-        value_receive = key_value[1]
-
-        print(key_receive)
-        value = int(value_receive) - 1
-        message = create_update_change(key, str(value))
-        client.sendall(message)
-
+    #SERVER_IP = "127.0.0.1"
+    #SERVER_PORT = 8080
+    SERVER_IP, SERVER_PORT = load_config()
     threads = list()
         #logging.info("Main: create and start thread %d.", index)
-    x = threading.Thread(target=loop_update1, args=(1,))
+
+    loop_time1 = 3
+    x = threading.Thread(target=loop_update1, args=(1, SERVER_IP, SERVER_PORT, loop_time1))
     threads.append(x)
     x.start()
-    x = threading.Thread(target=loop_update2, args=(2,))
+
+    loop_time2 = 2
+    x = threading.Thread(target=loop_update2, args=(2, SERVER_IP, SERVER_PORT, loop_time2))
     threads.append(x)
     x.start()
 
@@ -164,7 +179,39 @@ if __name__ == "__main__":
         thread.join()
         #logging.info("Main: thread %d done", index)
 
-    message = create_quit()
-    client.sendall(message)
+    """
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    client.close()
+    client_socket.connect((SERVER_IP, SERVER_PORT))
+
+    key = "x"
+    value = str(3)
+    message = create_write(key, value)
+    print(message)
+    client_socket.sendall(message)
+
+    for i in range(3):
+        time.sleep(0.1)
+        key = "x"
+        message = create_update_get(key)
+        # send the message to request for the data
+        client_socket.sendall(message)
+        #value = client.recv(1024)
+        key_value = receive_packet(client_socket)
+        key_value = key_value[1:].split(":")
+        key_receive = key_value[0]
+        value_receive = key_value[1]
+
+        print(key_receive)
+        value = int(value_receive) - 1
+        message = create_update_change(key, str(value))
+        client_socket.sendall(message)
+
+    """
+
+    """
+    message = create_quit()
+    client_socket.sendall(message)
+
+    client_socket.close()
+    """

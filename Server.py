@@ -63,7 +63,7 @@ class Server():
 
     def load_config(self):
         try:
-            with open('./config/server.conf') as f:
+            with open('datastore/config/server.conf') as f:
                 for line in f:
                     if line[0] != '#':
                         line = line.split()
