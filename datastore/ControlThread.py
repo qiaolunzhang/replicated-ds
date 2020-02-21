@@ -75,6 +75,6 @@ class ControlThread(threading.Thread):
             command_list = command.split(" ")
             if command == "show datastore":
                 print(self.datastore.value_dic)
-            elif command[0] == "join":
+            elif command_list[0] == "join":
                 # join 192.168.138.1 80
                 self.join_datastore(command_list[1], int(command_list[2]))
