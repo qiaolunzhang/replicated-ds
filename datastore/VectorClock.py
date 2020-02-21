@@ -10,6 +10,8 @@ class VectorClock:
     """
     def __init__(self, num_replica, _id):
         self.id = _id
+        self.LOCALHOST = "127.0.0.1"
+        self.PORT = 8080
         self.num_replica = num_replica
         self.is_partition = True
         #self.vector_clock = [0 for i in range(self.num_replica)]
@@ -37,7 +39,9 @@ class VectorClock:
         # it's an int
         return tmp_id
 
-
+    def set_host_port(self, host, port):
+        self.LOCALHOST = host
+        self.PORT = port
 
     def init_vector_clock_dic(self, vc_dic, local_id):
         print("Initing vector clock")
@@ -68,6 +72,10 @@ class VectorClock:
 
     def get_replica_str(self):
         replica_str_list = []
+        replica_str_tmp = str(self.id) + ":" + str(self.LOCALHOST)
+        replica_str_tmp = replica_str_tmp + ":" + str(self.PORT)
+        replica_str_list.append(replica_str_tmp)
+
         for k, v in self.replica_dic.items():
             replica_str_tmp = str(k) + ":" + str(v[0])
             replica_str_tmp = replica_str_tmp + ":" + str(v[1])
