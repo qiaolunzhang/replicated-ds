@@ -31,6 +31,7 @@ class Server():
         self.num_replica = _num_replica
         self.vector_clock = _vector_clock
         self.load_config()
+        self.vector_clock.set_host_port(self.LOCALHOST, self.PORT)
         # is_partition means that this replica disconnects with other replica
         if bool(self.replica_dic):
             self.is_partition = False
