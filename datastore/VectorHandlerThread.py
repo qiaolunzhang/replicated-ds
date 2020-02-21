@@ -127,10 +127,10 @@ class VectorHandlerThread(threading.Thread):
                 # check the received vector clock
                 # we need to clear it after process the  vector clock
                 print("Now the event is set")
-                if self.vector_clock.check_is_partition():
-                    self.vector_clock.check_receive_from_all()
+                if not self.vector_clock.check_is_partition():
+                    self.accept_vector_clocks()
                 else:
-                    self.vector_clock.accept_vector_clocks()
+                    self.vector_clock.check_receive_from_all()
                     # if we can accept
                     self.vector_clock.reset_vector_clock()
                     # reset the partition state
