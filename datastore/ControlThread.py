@@ -74,7 +74,7 @@ class ControlThread(threading.Thread):
         #senderid:new_id | id1: ip:port | id2: ip2:port
         msg_list = msg.split("|")
         print(msg_list)
-        sender_new_id_list = msg_list[0].split(":")
+        sender_new_id_list = msg_list[0][1:].split(":")
         local_id = int(sender_new_id_list[0])
         replica_id_tmp = int(sender_new_id_list[1])
         vc_dic = {}
