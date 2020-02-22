@@ -118,7 +118,7 @@ class ProcessThread(threading.Thread):
                 if self.vector_clock.check_is_partition():
                     # tell him that there is a new message
                     # self.vector_clock.do_something()
-                    self.vector_clock.locked_add_received_vc(msg[0], msg[1])
+                    #self.vector_clock.locked_add_received_vc(msg[0], msg[1])
                     clock = msg[0]
                     sender_id = clock.split(":")[0]
                     self.vector_clock.add_join_syn_dic(sender_id, msg[2][2:], msg[0])
@@ -136,7 +136,7 @@ class ProcessThread(threading.Thread):
                 # actually it's the message received by the follower
                 if self.vector_clock.check_is_partition():
                     # log that there is a new message
-                    self.vector_clock.locked_add_received_vc(msg[0], msg[1])
+                    #self.vector_clock.locked_add_received_vc(msg[0], msg[1])
                     clock = msg[0]
                     sender_id = clock.split(":")[0]
                     self.vector_clock.add_join_syn_dic(sender_id, msg[2][2:], msg[0])
