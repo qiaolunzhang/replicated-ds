@@ -87,7 +87,7 @@ class ProcessThread(threading.Thread):
         msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
         return msg
 
-    def process_packet_join(self, msg):
+    def process_packet_join(self):
         replica_str = self.vector_clock.get_replica_str()
         new_id = self.vector_clock.assign_new_id()
         # send back localid:new_id|id1:ip:port|id2:ip2:port
@@ -123,11 +123,11 @@ class ProcessThread(threading.Thread):
             self.e.set()
         # join the data store
         elif msg[0] == "J":
-            replica_str = self.vector_clock.get_replica_str()
+            self.process_packet_join()
+            #replica_str = self.vector_clock.get_replica_str()
             # todo: make a field about the message length
-            replica_msg = self.get_message_to_new_replica(replica_str)
-            self.csocket.sendall(replica_msg)
-            pass
+            #replica_msg = self.get_message_to_new_replica(replica_str)
+            #self.csocket.sendall(replica_msg)
             # store another dict in the VectorClock
         # leave the data store
         elif msg[0] == "L":

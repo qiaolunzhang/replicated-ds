@@ -71,10 +71,12 @@ class ControlThread(threading.Thread):
         quit_msg = create_quit()
         self.join_client.sendall(quit_msg)
         self.join_client.close()
-        #new_id | id1: ip:port | id2: ip2:port
+        #senderid:new_id | id1: ip:port | id2: ip2:port
         msg_list = msg.split("|")
-        local_id = int(msg_list[0][0])
-        replica_id_tmp = int(msg_list[0][1])
+        print(msg_list)
+        sender_new_id_list = msg_list[0].split(":")
+        local_id = int(sender_new_id_list[0])
+        replica_id_tmp = int(sender_new_id_list[1])
         vc_dic = {}
         vc_dic[replica_id_tmp] = [server_ip, server_port]
         for element in msg_list[1:]:
