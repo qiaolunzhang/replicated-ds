@@ -102,3 +102,5 @@ class ControlThread(threading.Thread):
             elif command == "show partition":
                 # if the result is True, means that this replica is not connected with other replica
                 print(self.vector_clock.is_partition)
+            elif command == "show received_vc_dict":
+                print(self.vector_clock.received_vc_dict)

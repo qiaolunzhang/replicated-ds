@@ -118,4 +118,10 @@ how to join a new replica
 
 There are two types of users: leader and 
 
+#### VectorHandlerThread
+
+self.vector_clock.check_receive_from_all()
+
+self.vector_clock.reset_vector_clock()
+
 

@@ -137,9 +137,11 @@ class VectorHandlerThread(threading.Thread):
                 if not self.vector_clock.check_is_partition():
                     self.accept_vector_clocks()
                 else:
-                    self.vector_clock.check_receive_from_all()
+                    print("Now we cannot accept clocks")
+                    print(self.vector_clock.join_syn_dic)
+                    #self.vector_clock.check_receive_from_all()
                     # if we can accept
-                    self.vector_clock.reset_vector_clock()
+                    #self.vector_clock.reset_vector_clock()
                     # reset the partition state
                 self.e.clear()
                 pass

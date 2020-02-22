@@ -32,12 +32,19 @@ class VectorClock:
         # assume that we have only one leader
         self.leader_dic = {}
         self.follower_dic = {}
+        self.join_syn_dic = {}
 
     def put_leader_dic(self, id_val, ip_val, port_val):
         self.leader_dic[id_val] = [ip_val, port_val]
 
     def put_follower_dic(self, id_val, ip_val, port_val):
         self.follower_dic[id_val] = [ip_val, port_val]
+
+    def add_join_syn_dic(self, sender_id, joiner_str, clock_str):
+        # clock_str: sender_id:id1:value:id2:value:id3:value
+        local_str = str(self.id) + ":" + self.LOCALHOST + ":" + str(self.PORT)
+        if joiner_str == local_str:
+            self.join_syn_dic[sender_id] = clock_str
 
     def get_leader_dic(self):
         return self.leader_dic
