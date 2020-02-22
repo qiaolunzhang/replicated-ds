@@ -32,7 +32,28 @@ class VectorClock:
         # assume that we have only one leader
         self.leader_dic = {}
         self.follower_dic = {}
+        # {'0': '0:0:1:1:0:2:0', '1': '1:1:1:0:1:2:0'}
         self.join_syn_dic = {}
+
+    def check_receive_from_all(self):
+        for k, v in self.replica_dic:
+            if str(k) not in self.join_syn_dic:
+                return False
+        return True
+
+    def reset_vector_clock(self):
+        # k=2 v=2:0:0:1:1:2:1
+        for k, v in self.replica_dic:
+            k = int(k)
+            clock_list = v.split(":")
+            clock_list = clock_list[1:]
+            k_value = clock_list[2*(k-1) + 1]
+            self.vector_clock_dic[k] = k_value
+        self.vector_clock_dic[self.id] = 0
+        self.received_vc_dict.clear()
+        self.received_vector_clocks.clear()
+        self.is_partition = True
+        pass
 
     def put_leader_dic(self, id_val, ip_val, port_val):
         self.leader_dic[id_val] = [ip_val, port_val]
