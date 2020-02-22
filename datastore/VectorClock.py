@@ -49,7 +49,7 @@ class VectorClock:
             clock_list = clock_list[1:]
             clock_list = [int(e) for e in clock_list]
             tmp_dic = {}
-            for k_tmp in range(len(clock_list) // 2):
+            for k_tmp in range(1, len(clock_list) // 2 + 1):
                 tmp_dic[clock_list[2*(k_tmp-1)]] = clock_list[2*(k_tmp-1) + 1]
             self.vector_clock_dic[k] = tmp_dic[k]
         self.vector_clock_dic[self.id] = 0
