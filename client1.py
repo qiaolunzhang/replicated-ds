@@ -90,13 +90,13 @@ def receive_packet(client):
     print(msg)
     return msg
 
-def loop_update1(index, server_ip, server_port, loop_time_value):
+def loop_update1(key, server_ip, server_port, loop_time_value):
     #SERVER = "127.0.0.1"
     #PORT = 8080
     client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client1.connect((server_ip, server_port))
     for i in range(loop_time_value):
-        key = "x"
+        #key = "x"
         message = create_update_get(key)
         # send the message to request for the data
         client1.sendall(message)
@@ -116,13 +116,13 @@ def loop_update1(index, server_ip, server_port, loop_time_value):
     message = create_quit()
     client1.sendall(message)
 
-def loop_update2(index, server_ip, server_port, loop_time_value):
+def loop_update2(key, server_ip, server_port, loop_time_value):
     #SERVER = "127.0.0.1"
     #PORT = 8080
     client2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client2.connect((server_ip, server_port))
     for i in range(loop_time_value):
-        key = "x"
+        #key = "x"
         message = create_update_get(key)
         # send the message to request for the data
         client2.sendall(message)
@@ -165,12 +165,16 @@ if __name__ == "__main__":
         #logging.info("Main: create and start thread %d.", index)
 
     loop_time1 = 3
-    x = threading.Thread(target=loop_update1, args=(1, SERVER_IP, SERVER_PORT, loop_time1))
+    x = threading.Thread(target=loop_update1, args=('x', SERVER_IP, SERVER_PORT, loop_time1))
     threads.append(x)
     x.start()
 
     loop_time2 = 2
-    x = threading.Thread(target=loop_update2, args=(2, SERVER_IP, SERVER_PORT, loop_time2))
+    x = threading.Thread(target=loop_update2, args=('x', SERVER_IP, SERVER_PORT, loop_time2))
+    threads.append(x)
+    x.start()
+
+    x = threading.Thread(target=loop_update1, args=('y', SERVER_IP, SERVER_PORT, loop_time1))
     threads.append(x)
     x.start()
 

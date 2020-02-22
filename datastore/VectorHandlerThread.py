@@ -49,7 +49,6 @@ class VectorHandlerThread(threading.Thread):
         msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
         return msg
 
-
     def propagate_to_replica(self):
         # get the newly changed value
         # check if the local datastore has been changed by local client
@@ -140,4 +139,5 @@ class VectorHandlerThread(threading.Thread):
                 # the time is over, propagate to the replica
                 #print("Now propagate to replica")
                 if not self.vector_clock.check_is_partition():
+                    # when it's not local replica partition, propagate
                     self.propagate_to_replica()
