@@ -99,3 +99,5 @@ class ControlThread(threading.Thread):
                 print(self.vector_clock.get_replica_dic())
             elif command == "show local_id":
                 print(self.vector_clock.get_local_id())
+            elif command == "show partition":
+                print(self.vector_clock.is_partition)
