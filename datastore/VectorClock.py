@@ -36,14 +36,14 @@ class VectorClock:
         self.join_syn_dic = {}
 
     def check_receive_from_all(self):
-        for k, v in self.replica_dic:
+        for k, v in self.replica_dic.items():
             if str(k) not in self.join_syn_dic:
                 return False
         return True
 
     def reset_vector_clock(self):
         # k=2 v=2:0:0:1:1:2:1
-        for k, v in self.replica_dic:
+        for k, v in self.replica_dic.items():
             k = int(k)
             clock_list = v.split(":")
             clock_list = clock_list[1:]
