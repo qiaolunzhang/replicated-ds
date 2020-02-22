@@ -15,7 +15,7 @@ def create_quit():
 
 def propagate_thread_function(replica_ip_str, replica_port_int, msg_str):
     propagate_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    propagate_sock.connect((replica_ip_str, replica_port_int))
+    propagate_sock.connect((replica_ip_str, int(replica_port_int)))
     propagate_sock.sendall(msg_str)
 
     quit_msg = create_quit()
