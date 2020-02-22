@@ -137,8 +137,9 @@ class ProcessThread(threading.Thread):
                 if self.vector_clock.check_is_partition():
                     # log that there is a new message
                     self.vector_clock.locked_add_received_vc(msg[0], msg[1])
-                    # todo: do something
-                    #self.vector_clock.do_something()
+                    clock = msg[0]
+                    sender_id = clock.split(":")[0]
+                    self.vector_clock.add_join_syn_dic(sender_id, msg[2][2:], msg[0])
                 else:
                     self.vector_clock.locked_add_received_vc(msg[0], msg[1])
                     #self.set_received_start_vc(msg[0], msg[2])
