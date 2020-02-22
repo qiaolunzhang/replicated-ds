@@ -82,7 +82,7 @@ class VectorClock:
     def get_host_port(self):
         return self.LOCALHOST, self.PORT
 
-    def init_vector_clock_dic(self, vc_dic, local_id):
+    def init_vector_clock_dic(self, vc_dic, local_id, join=False):
         print("Initing vector clock")
         # set the local id here
         self.id = local_id
@@ -102,7 +102,8 @@ class VectorClock:
             num_vec_element = num_vec_element + 1
         # if there are more than 1 key in vector_clock_dic
         # this is not isolated
-        if num_vec_element > 1:
+        # besides, this function should not be called by join
+        if num_vec_element > 1 and not join:
             self.is_partition = False
         print(self.replica_dic)
 

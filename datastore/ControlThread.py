@@ -84,7 +84,7 @@ class ControlThread(threading.Thread):
             element_list = element.split(":")
             vc_dic[int(element_list[0])] = [element_list[1], int(element_list[2])]
 
-        self.vector_clock.init_vector_clock_dic(vc_dic, local_id)
+        self.vector_clock.init_vector_clock_dic(vc_dic, local_id, join=True)
 
     def run(self):
         while True:
@@ -100,4 +100,5 @@ class ControlThread(threading.Thread):
             elif command == "show local_id":
                 print(self.vector_clock.get_local_id())
             elif command == "show partition":
+                # if the result is True, means that this replica is not connected with other replica
                 print(self.vector_clock.is_partition)
