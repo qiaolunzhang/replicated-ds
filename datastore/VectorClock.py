@@ -53,8 +53,8 @@ class VectorClock:
                 tmp_dic[clock_list[2*(k_tmp-1)]] = clock_list[2*(k_tmp-1) + 1]
             self.vector_clock_dic[k] = tmp_dic[k]
         self.vector_clock_dic[self.id] = 0
-        self.received_vc_dict.clear()
-        self.received_vector_clocks.clear()
+        #self.received_vc_dict.clear()
+        #self.received_vector_clocks.clear()
         self.is_partition = False
 
     def put_leader_dic(self, id_val, ip_val, port_val):
