@@ -88,9 +88,7 @@ class VectorClock:
         self.id = local_id
         self.num_replica = 1
         # set the vector clock for local id
-        #self.vector_clock_dic[self.id] = 0
-        if bool(self.vector_clock_dic):
-            self.is_partition = False
+        self.vector_clock_dic[self.id] = 0
         for k, v in vc_dic.items():
             # replica_dic[replica_id] = [replica_ip, replica_port]
             # replica_id is int, replica_ip is string, replica_port is int
@@ -99,6 +97,13 @@ class VectorClock:
             # initialize the vector_clock
             self.vector_clock_dic[k] = 0
             self.num_replica += 1
+        num_vec_element = 0
+        for _ in self.vector_clock_dic:
+            num_vec_element = num_vec_element + 1
+        # if there are more than 1 key in vector_clock_dic
+        # this is not isolated
+        if num_vec_element > 1:
+            self.is_partition = False
         print(self.replica_dic)
 
     def set_partition_state(self, is_partition):
