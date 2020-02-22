@@ -29,6 +29,9 @@ class VectorClock:
         self.new_id_list = []
         self.lock = threading.Lock()
 
+    def get_local_id(self):
+        return self.id
+
     def assign_new_id(self):
         # the id and port are both integer
         ids_now = self.replica_dic.keys()

@@ -71,6 +71,17 @@ class ControlThread(threading.Thread):
         quit_msg = create_quit()
         self.join_client.sendall(quit_msg)
         self.join_client.close()
+        #new_id | id1: ip:port | id2: ip2:port
+        msg_list = msg.split("|")
+        local_id = int(msg_list[0][0])
+        replica_id_tmp = int(msg_list[0][1])
+        vc_dic = {}
+        vc_dic[replica_id_tmp] = [server_ip, server_port]
+        for element in msg_list[1:]:
+            element_list = element.split(":")
+            vc_dic[int(element_list[0])] = [element_list[1], int(element_list[2])]
+
+        self.vector_clock.init_vector_clock_dic(vc_dic, local_id)
 
     def run(self):
         while True:
@@ -81,3 +92,5 @@ class ControlThread(threading.Thread):
             elif command_list[0] == "join":
                 # join 192.168.138.1 80
                 self.join_datastore(command_list[1], int(command_list[2]))
+            elif command == "show replica":
+                print(self.vector_clock.get_replica_dic())

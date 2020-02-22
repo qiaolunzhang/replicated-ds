@@ -90,8 +90,9 @@ class ProcessThread(threading.Thread):
     def process_packet_join(self, msg):
         replica_str = self.vector_clock.get_replica_str()
         new_id = self.vector_clock.assign_new_id()
-        # send back new_id|id1:ip|id2:ip2
-        replica_msg = new_id + "|" + replica_str
+        # send back localid:new_id|id1:ip:port|id2:ip2:port
+        local_id_str = str(self.vector_clock.get_local_id())
+        replica_msg = local_id_str + ":" + new_id + "|" + replica_str
         replica_msg = self.get_message_to_new_replica(replica_msg)
         self.csocket.sendall(replica_msg)
 
