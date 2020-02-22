@@ -48,7 +48,7 @@ class VectorClock:
     def get_new_replica_str_leader(self):
         new_replica_tuple = self.leader_dic.popitem()
         replica_str = str(new_replica_tuple[0]) + ":" + new_replica_tuple[1][0]
-        replica_str = replica_str + ":" + new_replica_tuple[1][1]
+        replica_str = replica_str + ":" + str(new_replica_tuple[1][1])
         return replica_str
 
     def get_new_replica_str_follower(self):
