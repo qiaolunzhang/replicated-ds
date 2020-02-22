@@ -125,3 +125,9 @@ self.vector_clock.check_receive_from_all()
 self.vector_clock.reset_vector_clock()
 
 
+### 2020/2/23
+
+- try to keep data of newly joined replica
+- delete replica
+
+
