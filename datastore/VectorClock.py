@@ -52,7 +52,7 @@ class VectorClock:
         self.vector_clock_dic[self.id] = 0
         self.received_vc_dict.clear()
         self.received_vector_clocks.clear()
-        self.is_partition = True
+        self.is_partition = False
 
     def put_leader_dic(self, id_val, ip_val, port_val):
         self.leader_dic[id_val] = [ip_val, port_val]
