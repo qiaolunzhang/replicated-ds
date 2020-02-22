@@ -96,3 +96,5 @@ class ControlThread(threading.Thread):
                 self.join_datastore(command_list[1], int(command_list[2]))
             elif command == "show replica":
                 print(self.vector_clock.get_replica_dic())
+            elif command == "show local_id":
+                print(self.vector_clock.get_local_id())
