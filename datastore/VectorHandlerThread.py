@@ -67,6 +67,14 @@ class VectorHandlerThread(threading.Thread):
                 changed_value_list.append(str(k))
                 changed_value_list.append(str(v))
             send_vector_clock_str = send_vector_clock_str + ":".join(changed_value_list)
+            # if I'm a join leader
+            # we want to get 2:0:0:1:1:2:1|x:4:y:5:z:6|JF3:192.168.221.1:8080
+            if bool(self.vector_clock.get_leader_dic()):
+                send_vector_clock_str = send_vector_clock_str + "|JL" + self.vector_clock.get_new_replica_str_leader()
+            elif bool(self.vector_clock.get_follower_dic()):
+                # if I'm a join follower
+                # we want to get 2:0:0:1:1:2:1|x:4:y:5:z:6|JF3:192.168.221.1:8080
+                send_vector_clock_str = send_vector_clock_str + "|JF" + self.vector_clock.get_new_replica_str_follower()
             msg = self.create_propagate_message(send_vector_clock_str)
             # loop and send to all the replica
             replica_dic = self.vector_clock.get_replica_dic()

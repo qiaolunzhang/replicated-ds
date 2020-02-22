@@ -114,5 +114,8 @@ how to join a new replica
 
 - 2.the replica send to all replica(including the new joiner)
 
+### 2020/02/22
+
+There are two types of users: leader and 
 
 

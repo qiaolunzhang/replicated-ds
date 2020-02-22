@@ -8,12 +8,6 @@ from datastore.ProcessThread import ProcessThread
 from datastore.VectorClock import VectorClock
 
 
-def create_join():
-    msg = "S" + "J"
-    msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
-    return msg
-
-
 def create_quit():
     msg = "S" + "Q"
     msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
@@ -28,6 +22,13 @@ class ControlThread(threading.Thread):
         self.RECV_BUFFER = 4096
         self.RECV_MSG_LEN = 4
         self.join_client = None
+
+    def create_join(self):
+        msg = "S" + "J"
+        host, port = self.vector_clock.get_host_port()
+        msg = msg + "|" + host + ":" + str(port)
+        msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
+        return msg
 
     def receive_packet(self):
         if self.join_client is None:
@@ -62,7 +63,7 @@ class ControlThread(threading.Thread):
         replica_dic
         :return:
         """
-        join_msg = create_join()
+        join_msg = self.create_join()
         self.join_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.join_client.connect((server_ip, server_port))
         self.join_client.sendall(join_msg)

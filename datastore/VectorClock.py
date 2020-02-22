@@ -28,6 +28,34 @@ class VectorClock:
         self.replica_dic = {}
         self.new_id_list = []
         self.lock = threading.Lock()
+        # {id1:[ip1, port1], id2:[ip2, port2]}
+        # assume that we have only one leader
+        self.leader_dic = {}
+        self.follower_dic = {}
+
+    def put_leader_dic(self, id_val, ip_val, port_val):
+        self.leader_dic[id_val] = [ip_val, port_val]
+
+    def put_follower_dic(self, id_val, ip_val, port_val):
+        self.follower_dic[id_val] = [ip_val, port_val]
+
+    def get_leader_dic(self):
+        return self.leader_dic
+
+    def get_follower_dic(self):
+        return self.follower_dic
+
+    def get_new_replica_str_leader(self):
+        new_replica_tuple = self.leader_dic.popitem()
+        replica_str = str(new_replica_tuple[0]) + ":" + new_replica_tuple[1][0]
+        replica_str = replica_str + ":" + new_replica_tuple[1][1]
+        return replica_str
+
+    def get_new_replica_str_follower(self):
+        new_replica_tuple = self.follower_dic.popitem()
+        replica_str = str(new_replica_tuple[0]) + ":" + new_replica_tuple[1][0]
+        replica_str = replica_str + ":" + new_replica_tuple[1][1]
+        return replica_str
 
     def get_local_id(self):
         return self.id
@@ -42,9 +70,17 @@ class VectorClock:
         # it's an int
         return tmp_id
 
+    def add_new_replica_to_vector_clock(self, id_val, clock_val, host_val, port_val):
+        self.num_replica = self.num_replica + 1
+        self.replica_dic[id_val] = [host_val, port_val]
+        self.vector_clock_dic[id_val] = clock_val
+
     def set_host_port(self, host, port):
         self.LOCALHOST = host
         self.PORT = port
+
+    def get_host_port(self):
+        return self.LOCALHOST, self.PORT
 
     def init_vector_clock_dic(self, vc_dic, local_id):
         print("Initing vector clock")

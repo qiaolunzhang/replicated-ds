@@ -87,14 +87,20 @@ class ProcessThread(threading.Thread):
         msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
         return msg
 
-    def process_packet_join(self):
+    def process_packet_join(self, host_val, port_val):
         replica_str = self.vector_clock.get_replica_str()
         new_id = self.vector_clock.assign_new_id()
+        # add the new replica to vector_clock
+        self.vector_clock.add_new_replica_to_vector_clock(new_id, 0, host_val, port_val)
+
         # send back localid:new_id|id1:ip:port|id2:ip2:port
         local_id_str = str(self.vector_clock.get_local_id())
         replica_msg = local_id_str + ":" + str(new_id) + "|" + replica_str
         replica_msg = self.get_message_to_new_replica(replica_msg)
         self.csocket.sendall(replica_msg)
+
+        self.vector_clock.put_leader_dic(new_id, host_val, int(port_val))
+        #self.vector_clock.put_leader_dic(new_id, self.)
 
     def process_packet_server(self, msg):
         """Actually this function can substitute the VectorHandlerThread we designed before"""
@@ -107,23 +113,38 @@ class ProcessThread(threading.Thread):
             msg = msg[1:].split("|")
             if len(msg) == 2:
                 self.vector_clock.locked_add_received_vc(msg[0], msg[1])
-            elif len(msg) == 3 and msg[3] == "J":
-                # actually its the message sent by the follower
-                # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5|J
+            # 2:0:0:1:1:2:1|x:4:y:5:z:6|JL3:192.168.221.1:8080
+            elif len(msg) == 3 and msg[3][0:2] == "JL":
                 if self.vector_clock.check_is_partition():
+                    # tell him that there is a new message
+                    # self.vector_clock.do_something()
+                    self.vector_clock.locked_add_received_vc(msg[0], msg[1])
+                else:
+                    self.vector_clock.locked_add_received_vc(msg[0], msg[1])
+                    new_replica_str = msg[3][2:]
+                    new_replica_list = new_replica_str.split(":")
+                    self.vector_clock.put_follower_dic(int(new_replica_list[0]),
+                                                       new_replica_list[1], int(new_replica_list[2]))
+                    # add the new client
+                    self.vector_clock.add_new_replica_to_vector_clock(int(new_replica_list[0]), 0,
+                                                                      new_replica_list[1], int(new_replica_list[2]))
+            elif len(msg) == 3 and msg[3][0:2] == "JF":
+                # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5|JF IP:new_replica_ip:new_replica_port
+                # actually it's the message received by the follower
+                if self.vector_clock.check_is_partition():
+                    # log that there is a new message
+                    self.vector_clock.locked_add_received_vc(msg[0], msg[1])
                     self.vector_clock.do_something()
                 else:
                     self.vector_clock.locked_add_received_vc(msg[0], msg[1])
-            elif len(msg) == 4 and msg[3] == "J":
-                # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5|J|new_replica_ip:new_replica_port
-                # actually it's the message received by the follower
-                self.vector_clock.locked_add_received_vc(msg[0], msg[1])
-                # todo: make the function
-                self.set_received_start_vc(msg[0], msg[2])
+                    #self.set_received_start_vc(msg[0], msg[2])
             self.e.set()
         # join the data store
         elif msg[0] == "J":
-            self.process_packet_join()
+            host_port_list = msg[2:].split(":")
+            host = host_port_list[0]
+            port = host_port_list[1]
+            self.process_packet_join(host, port)
             #replica_str = self.vector_clock.get_replica_str()
             # todo: make a field about the message length
             #replica_msg = self.get_message_to_new_replica(replica_str)
