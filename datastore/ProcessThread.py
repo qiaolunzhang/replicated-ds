@@ -114,27 +114,28 @@ class ProcessThread(threading.Thread):
             if len(msg) == 2:
                 self.vector_clock.locked_add_received_vc(msg[0], msg[1])
             # 2:0:0:1:1:2:1|x:4:y:5:z:6|JL3:192.168.221.1:8080
-            elif len(msg) == 3 and msg[3][0:2] == "JL":
+            elif len(msg) == 3 and msg[2][0:2] == "JL":
                 if self.vector_clock.check_is_partition():
                     # tell him that there is a new message
                     # self.vector_clock.do_something()
                     self.vector_clock.locked_add_received_vc(msg[0], msg[1])
                 else:
                     self.vector_clock.locked_add_received_vc(msg[0], msg[1])
-                    new_replica_str = msg[3][2:]
+                    new_replica_str = msg[2][2:]
                     new_replica_list = new_replica_str.split(":")
                     self.vector_clock.put_follower_dic(int(new_replica_list[0]),
                                                        new_replica_list[1], int(new_replica_list[2]))
                     # add the new client
                     self.vector_clock.add_new_replica_to_vector_clock(int(new_replica_list[0]), 0,
                                                                       new_replica_list[1], int(new_replica_list[2]))
-            elif len(msg) == 3 and msg[3][0:2] == "JF":
+            elif len(msg) == 3 and msg[2][0:2] == "JF":
                 # sender_id:id1:value:id2:value:id3:value|x:3:y:4:z:5|JF IP:new_replica_ip:new_replica_port
                 # actually it's the message received by the follower
                 if self.vector_clock.check_is_partition():
                     # log that there is a new message
                     self.vector_clock.locked_add_received_vc(msg[0], msg[1])
-                    self.vector_clock.do_something()
+                    # todo: do something
+                    #self.vector_clock.do_something()
                 else:
                     self.vector_clock.locked_add_received_vc(msg[0], msg[1])
                     #self.set_received_start_vc(msg[0], msg[2])
