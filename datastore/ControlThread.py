@@ -75,10 +75,10 @@ class ControlThread(threading.Thread):
         msg_list = msg.split("|")
         print(msg_list)
         sender_new_id_list = msg_list[0][1:].split(":")
-        local_id = int(sender_new_id_list[0])
-        replica_id_tmp = int(sender_new_id_list[1])
+        local_id = int(sender_new_id_list[1])
+        #replica_id_tmp = int(sender_new_id_list[1])
         vc_dic = {}
-        vc_dic[replica_id_tmp] = [server_ip, server_port]
+        #vc_dic[replica_id_tmp] = [server_ip, server_port]
         for element in msg_list[1:]:
             element_list = element.split(":")
             vc_dic[int(element_list[0])] = [element_list[1], int(element_list[2])]
