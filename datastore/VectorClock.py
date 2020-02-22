@@ -88,7 +88,7 @@ class VectorClock:
         self.id = local_id
         self.num_replica = 1
         # set the vector clock for local id
-        self.vector_clock_dic[self.id] = 0
+        #self.vector_clock_dic[self.id] = 0
         if bool(self.vector_clock_dic):
             self.is_partition = False
         for k, v in vc_dic.items():
