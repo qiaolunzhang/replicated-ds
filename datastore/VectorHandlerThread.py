@@ -177,8 +177,8 @@ class VectorHandlerThread(threading.Thread):
                 # we need to clear it after process the  vector clock
                 print("Now the event is set")
                 if not self.vector_clock.check_is_partition():
-                    self.propagate_leave_message()
                     if self.vector_clock.check_leave_state():
+                        self.propagate_leave_message()
                         self.vector_clock.leave_replica()
                     self.accept_vector_clocks()
                 else:
