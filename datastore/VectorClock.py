@@ -49,6 +49,7 @@ class VectorClock:
 
     def remove_replica(self, remove_id):
         self.leaved_replica_dic[int(remove_id)] = self.replica_dic[int(remove_id)]
+        self.num_replica = self.num_replica - 1
 
     def leave_replica(self):
         self.received_vector_clocks.clear()
@@ -191,6 +192,8 @@ class VectorClock:
         replica_str_list.append(replica_str_tmp)
 
         for k, v in self.replica_dic.items():
+            if k in self.leaved_replica_dic.keys():
+                continue
             replica_str_tmp = str(k) + ":" + str(v[0])
             replica_str_tmp = replica_str_tmp + ":" + str(v[1])
             replica_str_list.append(replica_str_tmp)
