@@ -78,9 +78,13 @@ class VectorHandlerThread(threading.Thread):
             msg = self.create_propagate_message(send_vector_clock_str)
             # loop and send to all the replica
             replica_dic = self.vector_clock.get_replica_dic()
+            leaved_replica_dic = self.vector_clock.get_leaved_replica()
             # todo: maybe also use thread here
             threads = list()
             for k, v in replica_dic.items():
+                # if the replica leaves, we will not propagate to it
+                if k in leaved_replica_dic.keys():
+                    continue
                 replica_ip = v[0]
                 replica_port = v[1]
                 x = threading.Thread(target=propagate_thread_function, args=(replica_ip, replica_port, msg))
@@ -135,6 +139,8 @@ class VectorHandlerThread(threading.Thread):
                 # we need to clear it after process the  vector clock
                 print("Now the event is set")
                 if not self.vector_clock.check_is_partition():
+                    if self.vector_clock.check_leave_state():
+                        self.vector_clock.leave_replica()
                     self.accept_vector_clocks()
                 else:
                     print("Now we cannot accept clocks")

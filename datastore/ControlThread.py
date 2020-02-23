@@ -3,6 +3,7 @@ import threading
 import struct
 import logging
 import time
+from threading import Event
 from datastore.CausalDatastore import CausalDataStore
 from datastore.ProcessThread import ProcessThread
 from datastore.VectorClock import VectorClock
@@ -15,13 +16,14 @@ def create_quit():
 
 
 class ControlThread(threading.Thread):
-    def __init__(self, datastore: CausalDataStore, vector_clock: VectorClock):
+    def __init__(self, datastore: CausalDataStore, vector_clock: VectorClock, event: Event):
         threading.Thread.__init__(self)
         self.datastore = datastore
         self.vector_clock = vector_clock
         self.RECV_BUFFER = 4096
         self.RECV_MSG_LEN = 4
-        self.join_client = None
+        self.leave_client = None
+        self.e = event
 
     def create_join(self):
         msg = "S" + "J"
@@ -31,7 +33,7 @@ class ControlThread(threading.Thread):
         return msg
 
     def receive_packet(self):
-        if self.join_client is None:
+        if self.leave_client is None:
             return ""
         tot_len = 0
         msg_len_pack = b""
@@ -39,7 +41,7 @@ class ControlThread(threading.Thread):
         # todo: add more control for length
         while tot_len < self.RECV_MSG_LEN:
             # print("Test")
-            msg_len_pack = self.join_client.recv(self.RECV_MSG_LEN)
+            msg_len_pack = self.leave_client.recv(self.RECV_MSG_LEN)
             tot_len = tot_len + len(msg_len_pack)
 
         msg_len = struct.unpack('>I', msg_len_pack)[0]
@@ -48,9 +50,9 @@ class ControlThread(threading.Thread):
         tot_len = 0
         while tot_len < msg_len:
             if (msg_len - tot_len) > self.RECV_BUFFER:
-                msg = self.join_client.recv(self.RECV_BUFFER)
+                msg = self.leave_client.recv(self.RECV_BUFFER)
             else:
-                msg = self.join_client.recv(msg_len - tot_len)
+                msg = self.leave_client.recv(msg_len - tot_len)
             tot_len = tot_len + len(msg)
         msg = msg.decode('UTF-8')
         return msg
@@ -86,6 +88,14 @@ class ControlThread(threading.Thread):
 
         self.vector_clock.init_vector_clock_dic(vc_dic, local_id, join=True)
 
+    def leave_datastore(self, server_ip, server_port):
+        """
+        Leave the datastore
+        :return:
+        """
+        self.vector_clock.set_leave_replica(server_ip, server_port)
+        self.e.set()
+
     def run(self):
         while True:
             command = input("Please type your command: ")
@@ -95,6 +105,8 @@ class ControlThread(threading.Thread):
             elif command_list[0] == "join":
                 # join 192.168.138.1 80
                 self.join_datastore(command_list[1], int(command_list[2]))
+            elif command_list[0] == "leave":
+                self.leave_datastore(command_list[1], int(command_list[2]))
             elif command == "show replica":
                 print(self.vector_clock.get_replica_dic())
             elif command == "show local_id":

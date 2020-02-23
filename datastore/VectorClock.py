@@ -26,6 +26,7 @@ class VectorClock:
         # e.g. [[id1, [2, 3, 5]], [id2, [4, 5, 6]]
         self.received_vector_clocks = []
         self.replica_dic = {}
+        self.leaved_replica_dic = {}
         self.new_id_list = []
         self.lock = threading.Lock()
         # {id1:[ip1, port1], id2:[ip2, port2]}
@@ -34,6 +35,34 @@ class VectorClock:
         self.follower_dic = {}
         # {'0': '0:0:1:1:0:2:0', '1': '1:1:1:0:1:2:0'}
         self.join_syn_dic = {}
+        self.leave_state = False
+        self.leave_host = ""
+        self.leave_port = 8080
+
+    def check_leave_state(self):
+        return self.leave_state
+
+    def set_leave_replica(self, leave_host_value, leave_port_value):
+        self.leave_host = leave_host_value
+        self.leave_port = leave_port_value
+        self.leave_state = True
+
+    def leave_replica(self):
+        self.received_vector_clocks.clear()
+        self.replica_dic.clear()
+        self.leaved_replica_dic.clear()
+        self.new_id_list.clear()
+        self.leader_dic.clear()
+        self.follower_dic.clear()
+        self.join_syn_dic.clear()
+        self.leave_state = False
+        self.is_partition = True
+
+    def add_leaved_replica(self, id, host, port):
+        self.leaved_replica_dic[int(id)] = [host, int(port)]
+
+    def get_leaved_replica(self):
+        return self.leaved_replica_dic
 
     def check_receive_from_all(self):
         for k, v in self.replica_dic.items():

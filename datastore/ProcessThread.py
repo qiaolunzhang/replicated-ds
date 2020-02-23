@@ -151,7 +151,6 @@ class ProcessThread(threading.Thread):
             port = host_port_list[1]
             self.process_packet_join(host, port)
             #replica_str = self.vector_clock.get_replica_str()
-            # todo: make a field about the message length
             #replica_msg = self.get_message_to_new_replica(replica_str)
             #self.csocket.sendall(replica_msg)
             # store another dict in the VectorClock

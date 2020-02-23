@@ -10,7 +10,7 @@ class CausalDataStore:
         # keeps keys of the values needed to be stored in the database
         # stores the changes made by the local client
         self.local_changed_value_dic = {}
-        # stores both changes made bby the local client and the replica
+        # stores both changes made by the local client and the replica
         #self.changed_value_dic = {}
         self.lock = threading.Lock()
 

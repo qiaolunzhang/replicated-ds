@@ -128,6 +128,17 @@ self.vector_clock.reset_vector_clock()
 ### 2020/2/23
 
 - try to keep data of newly joined replica
-- delete replica
+because it is kept in the changed_value_dic, so it is OK to
+keep it. We don't need to do other change
+
+- delete replica: deleted replica
+add a field of leaved replica
+
+when we propagate data to the other replica, we use the
+replica in VectorHandlerThread.py
+
+#### todo:
+
+vector clock mutex?
 
 

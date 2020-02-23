@@ -51,7 +51,7 @@ class Server():
         vector_handler_thread = VectorHandlerThread(self.datastore, self.vector_clock, self.e)
         vector_handler_thread.start()
         # start the control thread
-        control_thread = ControlThread(self.datastore, self.vector_clock)
+        control_thread = ControlThread(self.datastore, self.vector_clock, self.e)
         # use function start instead of run
         control_thread.start()
         while True:
