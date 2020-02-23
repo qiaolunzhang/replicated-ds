@@ -109,6 +109,8 @@ class ControlThread(threading.Thread):
                 self.leave_datastore(command_list[1], int(command_list[2]))
             elif command == "show replica":
                 print(self.vector_clock.get_replica_dic())
+            elif command == "show vector clock":
+                print(self.vector_clock.vector_clock_dic)
             elif command == "show local_id":
                 print(self.vector_clock.get_local_id())
             elif command == "show partition":
