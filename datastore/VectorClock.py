@@ -48,7 +48,7 @@ class VectorClock:
         self.leave_state = True
 
     def remove_replica(self, remove_id):
-        self.leaved_replica_dic[remove_id] = self.replica_dic[remove_id]
+        self.leaved_replica_dic[int(remove_id)] = self.replica_dic[int(remove_id)]
 
     def leave_replica(self):
         self.received_vector_clocks.clear()
