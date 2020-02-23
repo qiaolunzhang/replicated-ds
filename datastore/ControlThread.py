@@ -22,7 +22,7 @@ class ControlThread(threading.Thread):
         self.vector_clock = vector_clock
         self.RECV_BUFFER = 4096
         self.RECV_MSG_LEN = 4
-        self.leave_client = None
+        self.join_client = None
         self.e = event
 
     def create_join(self):
@@ -33,7 +33,7 @@ class ControlThread(threading.Thread):
         return msg
 
     def receive_packet(self):
-        if self.leave_client is None:
+        if self.join_client is None:
             return ""
         tot_len = 0
         msg_len_pack = b""
@@ -41,7 +41,7 @@ class ControlThread(threading.Thread):
         # todo: add more control for length
         while tot_len < self.RECV_MSG_LEN:
             # print("Test")
-            msg_len_pack = self.leave_client.recv(self.RECV_MSG_LEN)
+            msg_len_pack = self.join_client.recv(self.RECV_MSG_LEN)
             tot_len = tot_len + len(msg_len_pack)
 
         msg_len = struct.unpack('>I', msg_len_pack)[0]
@@ -50,9 +50,9 @@ class ControlThread(threading.Thread):
         tot_len = 0
         while tot_len < msg_len:
             if (msg_len - tot_len) > self.RECV_BUFFER:
-                msg = self.leave_client.recv(self.RECV_BUFFER)
+                msg = self.join_client.recv(self.RECV_BUFFER)
             else:
-                msg = self.leave_client.recv(msg_len - tot_len)
+                msg = self.join_client.recv(msg_len - tot_len)
             tot_len = tot_len + len(msg)
         msg = msg.decode('UTF-8')
         return msg
