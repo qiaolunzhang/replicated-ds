@@ -89,7 +89,7 @@ class ProcessThread(threading.Thread):
 
     def process_packet_join(self, host_val, port_val):
         replica_str = self.vector_clock.get_replica_str()
-        new_id = self.vector_clock.assign_new_id()
+        new_id = self.vector_clock.assign_new_id(host_val, port_val)
         # add the new replica to vector_clock
         self.vector_clock.add_new_replica_to_vector_clock(new_id, 0, host_val, port_val)
 

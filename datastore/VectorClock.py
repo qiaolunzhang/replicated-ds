@@ -122,8 +122,13 @@ class VectorClock:
     def get_local_id(self):
         return self.id
 
-    def assign_new_id(self):
+    def assign_new_id(self, host_val, port_val):
         # the id and port are both integer
+        for k, v in self.replica_dic.items():
+            host_tmp = v[0]
+            port_tmp = v[1]
+            if host_val == host_tmp and int(port_val) == int(port_tmp):
+                return k
         ids_now = self.replica_dic.keys()
         tmp_id = 1
         while tmp_id in ids_now or tmp_id in self.new_id_list:
@@ -135,6 +140,8 @@ class VectorClock:
     def add_new_replica_to_vector_clock(self, id_val, clock_val, host_val, port_val):
         self.num_replica = self.num_replica + 1
         self.replica_dic[id_val] = [host_val, port_val]
+        if int(id_val) in self.leaved_replica_dic.keys():
+            self.leaved_replica_dic.pop(id_val)
         self.vector_clock_dic[id_val] = clock_val
 
     def set_host_port(self, host, port):
