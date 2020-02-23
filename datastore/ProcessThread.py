@@ -156,6 +156,9 @@ class ProcessThread(threading.Thread):
             # store another dict in the VectorClock
         # leave the data store
         elif msg[0] == "L":
+            msg = msg[1:].split(":")
+            leaved_id = msg[0]
+            self.vector_clock.remove_replica(leaved_id)
             pass
         elif msg[0] == "F":
             pass

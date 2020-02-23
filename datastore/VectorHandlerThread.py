@@ -49,6 +49,17 @@ class VectorHandlerThread(threading.Thread):
         msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
         return msg
 
+    def create_leave_message(self, send_vc_str):
+        """
+        create the second message we send to the server to update the value
+        :param key: the key of the value that we want to update
+        :param value: the value that we update the data with
+        :return:
+        """
+        msg = "SL" + send_vc_str
+        msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
+        return msg
+
     def propagate_to_replica(self):
         # get the newly changed value
         # check if the local datastore has been changed by local client
@@ -106,6 +117,33 @@ class VectorHandlerThread(threading.Thread):
         #else:
         #    print("The dict is empty")
 
+    def propagate_leave_message(self):
+        send_vector_clock_str = self.vector_clock.locked_get_send_vector_clock_str()
+        send_vector_clock_str = send_vector_clock_str + "|"
+        # changed_value_dic is a string representation of the vector : 2:0:0:1:1:2:1
+        # vector_clock_dic is a dict of {id: clock}, id is a string, clock is an int
+        # we want to get 2:0:0:1:1:2:1|x:4:y:5:z:6
+        # we want to get 2:0:0:1:1:2:1|x:4:y:5:z:6|JF3:192.168.221.1:8080
+        msg = self.create_leave_message(send_vector_clock_str)
+
+        # loop and send to all the replica
+        replica_dic = self.vector_clock.get_replica_dic()
+        leaved_replica_dic = self.vector_clock.get_leaved_replica()
+        # todo: maybe also use thread here
+        threads = list()
+        for k, v in replica_dic.items():
+            # if the replica leaves, we will not propagate to it
+            if k in leaved_replica_dic.keys():
+                continue
+            replica_ip = v[0]
+            replica_port = v[1]
+            x = threading.Thread(target=propagate_thread_function, args=(replica_ip, replica_port, msg))
+            threads.append(x)
+            x.start()
+        for index, thread in enumerate(threads):
+            thread.join()
+        print("The vector clock dic to send is: ", )
+
     # todo: check the accept vector clock function
     def accept_vector_clocks(self):
         """
@@ -139,6 +177,7 @@ class VectorHandlerThread(threading.Thread):
                 # we need to clear it after process the  vector clock
                 print("Now the event is set")
                 if not self.vector_clock.check_is_partition():
+                    self.propagate_leave_message()
                     if self.vector_clock.check_leave_state():
                         self.vector_clock.leave_replica()
                     self.accept_vector_clocks()
