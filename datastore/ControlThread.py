@@ -108,7 +108,8 @@ class ControlThread(threading.Thread):
             elif command_list[0] == "leave":
                 self.leave_datastore(command_list[1], int(command_list[2]))
             elif command == "show replica":
-                print(self.vector_clock.get_replica_dic())
+                print("Total replica is: ", self.vector_clock.get_replica_dic())
+                print("The leaved replica is: ", self.vector_clock.get_leaved_replica())
             elif command == "show vector clock":
                 print(self.vector_clock.vector_clock_dic)
             elif command == "show local_id":
