@@ -34,6 +34,13 @@ def create_write(key, value):
     msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
     return msg
 
+
+def create_read(key):
+    msg = "C" + "R" + key
+    msg = struct.pack('>I', len(msg)) + bytes(msg, 'UTF-8')
+    return msg
+
+
 def create_update_get(key):
     """
     :param key: the key of the value that we want to update
@@ -156,25 +163,19 @@ def load_config():
         print(e)
     return host, port
 
-
-if __name__ == "__main__":
-    #SERVER_IP = "127.0.0.1"
-    #SERVER_PORT = 8080
-    SERVER_IP, SERVER_PORT = load_config()
+def eg1(SERVER_IP_val, SERVER_PORT_val):
     threads = list()
-        #logging.info("Main: create and start thread %d.", index)
-
-    loop_time1 = 3
-    x = threading.Thread(target=loop_update1, args=('x', SERVER_IP, SERVER_PORT, loop_time1))
+    loop_time1 = 1000
+    x = threading.Thread(target=loop_update1, args=('x', SERVER_IP_val, SERVER_PORT_val, loop_time1))
     threads.append(x)
     x.start()
 
-    loop_time2 = 2
-    x = threading.Thread(target=loop_update2, args=('x', SERVER_IP, SERVER_PORT, loop_time2))
+    loop_time2 = 1000
+    x = threading.Thread(target=loop_update2, args=('x', SERVER_IP_val, SERVER_PORT_val, loop_time2))
     threads.append(x)
     x.start()
 
-    x = threading.Thread(target=loop_update1, args=('y', SERVER_IP, SERVER_PORT, loop_time1))
+    x = threading.Thread(target=loop_update1, args=('y', SERVER_IP_val, SERVER_PORT_val, loop_time1))
     threads.append(x)
     x.start()
 
@@ -182,6 +183,36 @@ if __name__ == "__main__":
         #logging.info("Main: before joining thread %d.", index)
         thread.join()
         #logging.info("Main: thread %d done", index)
+
+
+def read_value(key, server_ip, server_port):
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((server_ip, server_port))
+    message = create_read(key)
+    client.sendall(message)
+    key_value = receive_packet(client)
+    key_value = key_value[1:].split(":")
+    key_receive = key_value[0]
+    value_receive = key_value[1]
+
+    print(key_receive + " is: ", value_receive)
+
+    message = create_quit()
+    client.sendall(message)
+
+if __name__ == "__main__":
+    #SERVER_IP = "127.0.0.1"
+    #SERVER_PORT = 8080
+    SERVER_IP, SERVER_PORT = load_config()
+        #logging.info("Main: create and start thread %d.", index)
+    eg1(SERVER_IP, SERVER_PORT)
+    while True:
+        command = input("Please type in your command: ")
+        command_list = command.split(" ")
+        if command_list[0] == "read":
+            read_value(command_list[1], SERVER_IP, SERVER_PORT)
+
+
 
     """
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

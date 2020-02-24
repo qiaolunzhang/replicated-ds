@@ -58,6 +58,12 @@ class ProcessThread(threading.Thread):
         #print(msg)
         if msg[0] == "Q":
             return "quit"
+        elif msg[0] == "R":
+            key = msg[1:]
+            value = self.datastore.read(key)
+            value = str(value)
+            message_to_client = self.get_message_value_to_client(key, value)
+            self.csocket.sendall(message_to_client)
         elif msg[0] == "W":
             # e.g. x:3
             msg = msg[1:].split(":")
